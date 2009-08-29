@@ -1,0 +1,1 @@
+Bitte verwende zum editieren von Dateien einen UTF-8 konformen Editor!
