@@ -220,7 +220,7 @@ class pm{
 		$errorcode = $this->_errcodes[$errorcode];
 		return $errorcode;
 	}
-	public function install_pack($packname, $packfile = '', $remote = false){
+	public function install_pack($packname, $packfile = '', $remote = false, $force = false){
 		//Paket entpacken und pruefen
 		if($packfile){
 			require_once(ROOTPATH.'pm/include/pclzip.lib.php');
@@ -269,6 +269,7 @@ class pm{
 				{
 					$this->_debugcodes .= '</blockquote>';
 					$this->_debugcodes .= "\n<p>" . $this->_parse_lang_const('DEPEND_LOAD_ERROR') . '</p>';
+					if(!$force)
 					return false;
 				}
 				$this->_load_pack($depend, $this->_installed);
@@ -285,6 +286,7 @@ class pm{
 				{
 					$this->_debugcodes .= '</blockquote>';
 					$this->_debugcodes .= "\n<p>" . $this->_parse_lang_const('DEPEND_LOAD_ERROR') . '</p>';
+					if(!$force)
 					return false;
 				}
 				$this->_debugcodes .= '</blockquote>';
@@ -293,12 +295,31 @@ class pm{
 		//Ueberpruefen ob Paket installiert ist
 		if($this->_is_installed($packname) && is_dir(ROOTPATH.'pack/' . $packname)){
 			$this->_debugcodes .= "\n<p>" . $this->_parse_lang_const('ALREADY_INSTALLED') . '</p>';
-			//MD5 Summen usw pruefen
+			//Versionsnummern vergleichen
+			$compared = $this->_compare_version($directini['version'], $this->_installed[$packname]['version']);
+			if($compared == 2 || $compared == 0){
+				//Neuer oder gleich
+				//Vergleichen per funktion damit auch fuer UI nutzbar
+				if($install_ini['SETUP']){
+					if(!$this->check_intregrit($packname, $install_ini['SETUP'])){
+						$this->_debugcodes .= "\n<p>" . $this->_parse_lang_const('INSTALLED_FILES_CHANGED') . '</p>';
+						if(!$force)
+						return false;
+					}
+				}
+			} else {
+				//Aelter
+				$this->_debugcodes .= "\n<p>" . $this->_parse_lang_const('ALREADY_INSTALLED_NEWER') . '</p>';
+				if(!$force)
+				return false;
+			}
 		} else if(is_dir(ROOTPATH.'pack/' . $packname)){
 			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->_parse_lang_const('ALREADY_EXISTING') . '</a></p>';
+			if(!$force)
 			return false;
 		} else if($this->_is_installed($packname)){
 			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->_parse_lang_const('ALREADY_INSTALLED_NO_FILES') . '</a></p>';
+			if(!$force)
 			return false;
 		}
 		if(!$this->_copy_req($srcdir, ROOTPATH.'pack/' . $packname)){
@@ -315,7 +336,7 @@ class pm{
 			$this->_debugcodes .= "\n<p>" . $this->_parse_lang_const('INI_ERROR') . '</p>';
 			return false;
 		}
-			
+		$this->_debugcodes .= "\n<p>" . $this->_parse_lang_const('INSTALL_COMPLETE') . '</p>';
 		return true;
 	}
 	private function _write_ini_file($assoc_arr, $path, $has_sections=FALSE) {
@@ -447,6 +468,24 @@ class pm{
 				return false;
 		} else
 			return false;
+		return true;
+	}
+	public function check_intregrit($packname, $cfg){
+		if(!$this->_is_installed($packname))
+			return true;
+		if(!is_array($cfg))
+			return false;
+		if(isset($cfg['md5']) && is_array($cfg['md5'])){
+			foreach($cfg['md5'] as $hash){
+				$hash = explode(";", $hash);
+				if($this->_compare_version($hash[0], $this->_installed[$packname]['version']) != 0)
+					continue;
+				if(!file_exists(ROOTPATH . 'pack/' . $packname . '/' . $hash[1]))
+					continue;
+				if(md5(file_get_contents(ROOTPATH . 'pack/' . $packname . '/' . $hash[1])) != $hash[2])
+					return false;
+			}
+		}
 		return true;
 	}
 }
