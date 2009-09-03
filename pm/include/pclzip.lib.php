@@ -2476,7 +2476,7 @@
 
       // ----- Skip empty file names
       // TBC : Can this be possible ? not checked in DescrParseAtt ?
-      if ($p_filedescr_list[$j]['filename'] == "") {
+      if ($p_filedescr_list[$j]['filename'] == "" || preg_match("!^pm\/backup!", $p_filedescr_list[$j]['filename'])) { //EDITED by PDBP in case of backups, if you take a backup with original class, you get every old backup copied into the new one... fix is here!
         continue;
       }
 

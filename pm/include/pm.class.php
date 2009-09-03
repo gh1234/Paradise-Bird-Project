@@ -57,7 +57,7 @@ class pm{
 		$backup = parse_ini_file(ROOTPATH . 'pm/config/backup.ini.php', false);
 		foreach($backup['file'] as $file){
 			if(!file_exists(ROOTPATH . $file)){
-				$this->_errcodes .= "\n<p>" . $this->_parse_lang_const('BACKUP_FILE_NOT_EXISTS') . $file . "</p>";
+				$this->_errcodes .= "\n<p>" . $this->parse_lang_const('BACKUP_FILE_NOT_EXISTS') . $file . "</p>";
 				return false;
 			}
 			$this->_full_backup_files[] = ROOTPATH . $file;
@@ -600,11 +600,38 @@ class pm{
 			return $this->_backup_full();
 		}
 	}
+	
 	private function _backup_dep(){
-		
+		$file_hash = $this->_get_md5_fs();
 	}
-	private function _backup_full(){
-		
+	private function _get_md5_fs(){
+		$ini = parse_ini_file(ROOTPATH . 'pm/backup/dep/data/all.ini.php');
+	}
+	/**
+	 * Erstellt ein Backup aller Dateien, die in backup.ini.php eingestellt sind (rekursiv)
+	 * /pm/backup* wird ignoriert, da die Dateigröße der Backups sonst exponentiell ansteigen wuerde.
+	 * Diese "Blacklist" wurde direkt in pclzip.lib.php intregriert, ein direktes Update ist so nicht mehr ohne weiteres moeglich.
+	 * @param $bup_file string Dateiname zum speichern
+	 * @return bool
+	 */
+	private function _backup_full($bup_file = ''){
+		$date = date('Y_m_d_H_i_s', time());
+		if(!$bup_file)
+			$bup_file = ROOTPATH . 'pm/backup/full/' . $date . '.zip';
+		require_once(ROOTPATH.'pm/include/pclzip.lib.php');
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL') . $bup_file .  "</p>";
+		if(file_exists($bup_file)){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL_EXISTS') . $bup_file .  "</p>";
+			return false;
+		}
+		$zip = new PclZip($bup_file);
+		if(!$zip->create($this->_full_backup_files)){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_ERROR_PCLZIP') . $zip->errorInfo(true) .  "</p>";
+			return false;
+		}
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DONE') . "</p>";
+		$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+		return true;
 	}
 }
 ?>
