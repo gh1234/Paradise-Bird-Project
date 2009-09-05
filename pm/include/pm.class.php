@@ -365,6 +365,51 @@ class pm{
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INSTALL_COMPLETE') . '</p>';
 		return true;
 	}
+	private function _tolerance_parse_ini_file($file, $has_sections = false){
+		if(!file_exists($file))
+			return false;
+		$file = fopen($file, 'r');
+		if(!$file)
+			return false;
+		$return = array();
+		$section = 0;
+		while(!feof($file)){
+			$line = fgets($file, 1000);
+			if(preg_match("!^;!", $line))
+				continue;
+			if($has_sections && preg_match("!^\[.*\]$!", $line)){
+				$section = preg_replace("!^\[(.*)\]$", "$1", $line);
+				continue;
+			}
+			$line = explode("=", $line);	
+			if(count($line) != 2)
+				continue;
+			$line[0] = preg_replace("!^ !", '', $line[0]);
+			$line[0] = preg_replace("! $!", '', $line[0]);
+			$line[1] = preg_replace("!^ !", '', $line[1]);
+			$line[1] = preg_replace("! $!", '', $line[1]);
+			$line[1] = preg_replace("!\n$!", '', $line[1]);
+			if(!$has_sections){
+				if(preg_match('!\[\]$!', $line[0])){
+					if(!isset($return[preg_replace("!\[\]$!", '', $line[0])]))
+						$return[preg_replace("!\[\]$!", '', $line[0])] = array();
+					$return[preg_replace("!\[\]$!", '', $line[0])][] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
+				} else {
+					$return[preg_replace("!\[\]$!", '', $line[0])] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
+				}
+			} else {
+				if(preg_match('!\[\]$!', $line[0])){
+					if(!isset($return[$section][preg_replace("!\[\]$!", '', $line[0])]))
+						$return[$section][preg_replace("!\[\]$!", '', $line[0])] = array();
+					$return[$section][preg_replace("!\[\]$!", '', $line[0])][] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
+				} else {
+					$return[$section][preg_replace("!\[\]$!", '', $line[0])] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
+				}
+			}
+		}
+		fclose($file);
+		return $return;
+	}
 	/**
 	 * INI Datei schreiben
 	 * @param $assoc_arr array Zu schreibende Werte
@@ -373,7 +418,7 @@ class pm{
 	 * @return bool
 	 */
 	private function _write_ini_file($assoc_arr, $path, $has_sections=FALSE) {
-        $content = ";<?php echo 'PDBP'; ?>\n";
+        $content = ";<?php die('PDBP'); ?>\n";
 
         if ($has_sections) {
             foreach ($assoc_arr as $key=>$elem) {
@@ -398,11 +443,11 @@ class pm{
                 {
                     for($i=0;$i<count($elem);$i++)
                     {
-                        $content .= $key2."[] = \"".$elem[$i]."\"\n";
+                        $content .= $key."[] = \"".$elem[$i]."\"\n";
                     }
                 }
-                else if($elem=="") $content .= $key2." = \n";
-                else $content .= $key2." = \"".$elem."\"\n";
+                else if($elem=="") $content .= $key." = \n";
+                else $content .= $key." = \"".$elem."\"\n";
             }
         }
 
@@ -602,17 +647,127 @@ class pm{
 	}
 	
 	private function _backup_dep(){
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_MAKE_DEP') .  "</p>";
 		$file_hash = $this->_get_md5_fs();
+		if(!$file_hash){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_NO_DEP_EXISTS') .  "</p>";
+			$this->_debugcodes .= "\n<blockquote>";
+			if(file_exists(ROOTPATH . 'pm/backup/dep/bup/1.zip')){
+				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT') .  "</p>";
+				return false;
+			}
+			$list = $this->_backup_full(ROOTPATH . 'pm/backup/dep/bup/1.zip'); //TODO Zugriff blockieren
+			$this->_debugcodes .= "\n</blockquote>";
+			$id = 1;
+		} else {
+			$merged = $this->_merge_md5_fs($file_hash, ROOTPATH);
+			$dir = opendir(ROOTPATH . 'pm/backup/dep/bup');
+			if(!$dir){
+				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_BUP_NOT_OPENED') .  "</p>";
+				return false;
+			}
+			$ids = array();
+			while($file = readdir($dir)){
+				if($file == '.' || $file == '..')
+					continue;
+				if(!preg_match("!^[0-9]*\.zip$!", $file))
+					continue;
+				$ids[] = preg_replace("!^([0-9]*)\.zip$!", "$1", $file);
+			}
+			sort($ids);
+			$id = $ids[count($ids) -1] +1;
+			closedir($dir);
+			require_once(ROOTPATH.'pm/include/pclzip.lib.php');
+			$zip = new PclZip(ROOTPATH . 'pm/backup/dep/bup/' . $id . '.zip');
+			$list = $zip->create($merged);
+		}
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_WRITE_MD5_FS') .  "</p>";
+		if(false === $changes = $this->_write_md5_fs(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php', ROOTPATH . 'pm/backup/dep/data/' . $id . '.ini.php', $list, $this->_tolerance_parse_ini_file(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'))){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_WRITE_MD5_FS_FAILED') . "</p>";
+			return false;
+		}
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_EDITED_FILES') . $changes .  "</p>";
+	}
+	private function _merge_md5_fs($md5fs, $filename, $return = array()){
+		if(!file_exists($filename))
+			return false;
+			
+		$filename = preg_replace("!\/$!", '', $filename);
+		if(is_dir($filename)){
+			$dir = opendir($filename);
+			while($file = readdir($dir)){
+				if($file == '.' || $file == '..')
+					continue;
+				$return = $this->_merge_md5_fs($md5fs, $filename . '/' . $file, $return);
+			}
+			closedir($dir);
+		} else {
+			$filename = preg_replace("!^\.\/!", '', $filename);
+			if(preg_match("!^pm\/backup!", $filename))
+				return $return;
+			if(!in_array(ROOTPATH . preg_replace("!^(.*?)\/.*!", "$1", $filename), $this->_full_backup_files))
+				return $return;
+			if(!isset($md5fs[$filename])){
+				$return[] = $filename;
+				return $return;
+			} else if($md5fs[$filename] != md5(file_get_contents($filename))){
+				echo '<p>' . $md5fs[$filename] . ' : ' . md5(file_get_contents($filename)) . '</p>';
+				$return[] = $filename;
+				return $return;
+			} else 
+				return $return;
+		}
+		return $return;
+	}
+	private function _write_md5_fs($file, $bup_file, $list, $mergewith = array()){
+		if(!$mergewith)
+			$mergewith = array();
+		if(!is_array($list) || !is_array($mergewith))
+			return false;
+		if(file_exists($bup_file)){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT_MD5_FS') .  "</p>";
+			return false;
+		}
+		$deleted = array();
+		$count = 0;
+		foreach($mergewith as $filename => $file_merge){
+			if(!file_exists($filename)){
+				$deleted[] = $filename;
+				unset($mergewith[$filename]);
+				$count++;
+			}
+		}
+		foreach($list as $file_merge){
+			if(is_dir($file_merge['filename'])){
+				if(!isset($mergewith[$file_merge['filename']]))
+					$count++;
+				$mergewith[$file_merge['filename']] = 'dir';
+				continue;
+			}
+			$hash = md5(file_get_contents($file_merge['filename']));
+			if(isset($mergewith[$file_merge['filename']]) && $mergewith[$file_merge['filename']] == $hash)
+				continue;
+			$mergewith[$file_merge['filename']] = $hash;
+			$count ++;
+		}
+		$this->_write_ini_file($mergewith, $file, false);
+		$this->_write_ini_file($deleted, $bup_file, false);
+		return $count;
 	}
 	private function _get_md5_fs(){
-		$ini = parse_ini_file(ROOTPATH . 'pm/backup/dep/data/all.ini.php');
+		if(!file_exists(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'))
+			return false;
+		$ini = $this->_tolerance_parse_ini_file(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php');
+		if(!$ini)
+			return false;
+		return $ini;
 	}
 	/**
 	 * Erstellt ein Backup aller Dateien, die in backup.ini.php eingestellt sind (rekursiv)
 	 * /pm/backup* wird ignoriert, da die Dateigröße der Backups sonst exponentiell ansteigen wuerde.
 	 * Diese "Blacklist" wurde direkt in pclzip.lib.php intregriert, ein direktes Update ist so nicht mehr ohne weiteres moeglich.
 	 * @param $bup_file string Dateiname zum speichern
-	 * @return bool
+	 * @return bool/array
 	 */
 	private function _backup_full($bup_file = ''){
 		$date = date('Y_m_d_H_i_s', time());
@@ -625,13 +780,16 @@ class pm{
 			return false;
 		}
 		$zip = new PclZip($bup_file);
-		if(!$zip->create($this->_full_backup_files)){
+		if(!$list = $zip->create($this->_full_backup_files)){
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_ERROR_PCLZIP') . $zip->errorInfo(true) .  "</p>";
 			return false;
 		}
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DONE') . "</p>";
-		$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
-		return true;
+		if($bup_file != ROOTPATH . 'pm/backup/full/' . $date . '.zip')
+			$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+		else
+			$this->_debugcodes .= "\n<p><a href=\"index.php?action=dl&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+		return $list;
 	}
 }
 ?>
