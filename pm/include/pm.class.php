@@ -38,6 +38,11 @@ class pm{
 	 * @var array
 	 */
 	private $_full_backup_files = array();
+	/**
+	 * Backup Methode true->volles Backup false->Abhaengiges Backup
+	 * @var bool
+	 */
+	private $_backup_type = false;
 	//Funktionen
 	/**
 	 * Konstruktor laed KOnfigurationen
@@ -249,6 +254,7 @@ class pm{
 	public function install_pack($packname, $packfile = '', $remote = false, $force = false){
 		//Paket entpacken und pruefen
 		if($packfile){
+			$this->backup($this->_backup_type);
 			require_once(ROOTPATH.'pm/include/pclzip.lib.php');
 			if(!file_exists($packfile)){
 				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('PACK_NOT_EXISTS') . $packname . '</p>';
@@ -365,25 +371,31 @@ class pm{
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INSTALL_COMPLETE') . '</p>';
 		return true;
 	}
+	/**
+	 * Parst eine INI Datei, ohne ueber Zeichen wie / oder aehnlichem "zu stolpern"
+	 * @param $file string Dateiname
+	 * @param $has_sections bool Sektionen
+	 * @return array/bool
+	 */
 	private function _tolerance_parse_ini_file($file, $has_sections = false){
 		if(!file_exists($file))
-			return false;
+		return false;
 		$file = fopen($file, 'r');
 		if(!$file)
-			return false;
+		return false;
 		$return = array();
 		$section = 0;
 		while(!feof($file)){
 			$line = fgets($file, 1000);
 			if(preg_match("!^;!", $line))
-				continue;
+			continue;
 			if($has_sections && preg_match("!^\[.*\]$!", $line)){
 				$section = preg_replace("!^\[(.*)\]$", "$1", $line);
 				continue;
 			}
-			$line = explode("=", $line);	
+			$line = explode("=", $line);
 			if(count($line) != 2)
-				continue;
+			continue;
 			$line[0] = preg_replace("!^ !", '', $line[0]);
 			$line[0] = preg_replace("! $!", '', $line[0]);
 			$line[1] = preg_replace("!^ !", '', $line[1]);
@@ -392,7 +404,7 @@ class pm{
 			if(!$has_sections){
 				if(preg_match('!\[\]$!', $line[0])){
 					if(!isset($return[preg_replace("!\[\]$!", '', $line[0])]))
-						$return[preg_replace("!\[\]$!", '', $line[0])] = array();
+					$return[preg_replace("!\[\]$!", '', $line[0])] = array();
 					$return[preg_replace("!\[\]$!", '', $line[0])][] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
 				} else {
 					$return[preg_replace("!\[\]$!", '', $line[0])] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
@@ -400,7 +412,7 @@ class pm{
 			} else {
 				if(preg_match('!\[\]$!', $line[0])){
 					if(!isset($return[$section][preg_replace("!\[\]$!", '', $line[0])]))
-						$return[$section][preg_replace("!\[\]$!", '', $line[0])] = array();
+					$return[$section][preg_replace("!\[\]$!", '', $line[0])] = array();
 					$return[$section][preg_replace("!\[\]$!", '', $line[0])][] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
 				} else {
 					$return[$section][preg_replace("!\[\]$!", '', $line[0])] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
@@ -418,78 +430,82 @@ class pm{
 	 * @return bool
 	 */
 	private function _write_ini_file($assoc_arr, $path, $has_sections=FALSE) {
-        $content = ";<?php die('PDBP'); ?>\n";
+		$content = ";<?php die('PDBP'); ?>\n";
 
-        if ($has_sections) {
-            foreach ($assoc_arr as $key=>$elem) {
-                $content .= "[".$key."]\n";
-                foreach ($elem as $key2=>$elem2)
-                {
-                    if(is_array($elem2))
-                    {
-                        for($i=0;$i<count($elem2);$i++)
-                        {
-                            $content .= $key2."[] = \"".$elem2[$i]."\"\n";
-                        }
-                    }
-                    else if($elem2=="") $content .= $key2." = \n";
-                    else $content .= $key2." = \"".$elem2."\"\n";
-                }
-            }
-        }
-        else {
-            foreach ($assoc_arr as $key=>$elem) {
-                if(is_array($elem))
-                {
-                    for($i=0;$i<count($elem);$i++)
-                    {
-                        $content .= $key."[] = \"".$elem[$i]."\"\n";
-                    }
-                }
-                else if($elem=="") $content .= $key." = \n";
-                else $content .= $key." = \"".$elem."\"\n";
-            }
-        }
+		if ($has_sections) {
+			foreach ($assoc_arr as $key=>$elem) {
+				$content .= "[".$key."]\n";
+				foreach ($elem as $key2=>$elem2)
+				{
+					if(is_array($elem2))
+					{
+						for($i=0;$i<count($elem2);$i++)
+						{
+							$content .= $key2."[] = \"".$elem2[$i]."\"\n";
+						}
+					}
+					else if($elem2=="") $content .= $key2." = \n";
+					else $content .= $key2." = \"".$elem2."\"\n";
+				}
+			}
+		}
+		else {
+			foreach ($assoc_arr as $key=>$elem) {
+				if(is_array($elem))
+				{
+					for($i=0;$i<count($elem);$i++)
+					{
+						$content .= $key."[] = \"".$elem[$i]."\"\n";
+					}
+				}
+				else if($elem=="") $content .= $key." = \n";
+				else $content .= $key." = \"".$elem."\"\n";
+			}
+		}
 
-        if (!$handle = fopen($path, 'w')) {
-            return false;
-        }
-        if (!fwrite($handle, $content)) {
-            return false;
-        }
-        fclose($handle);
-        return true;
-    }
-    /**
-     * Paket in die INI hinzufuegen
-     * @param $packname string Paketname
-     * @param $settings array Einstellungen fuer die Installation
-     * @return unknown_type bool
-     */
-    private function _add_pack($packname, $settings){
-    	if(!isset($settings) || !is_array($settings))
-    		return false;
-    	$packname = strtolower($packname);
-    	if(!preg_match('![a-z_0-9]!', $packname))
-    		return false;
-    	else if(!$this->_is_installed($packname)){
-    		$this->_installed[$packname] = $settings;
-    	}else if($this->_is_installed($packname)){
-    		//Mehr beim Update?!
-    		$this->_installed[$packname] = $settings;
-    	} else
-    		return false;
-    	return true;
-    }
-    /**
-     * Ausagbe der Debug Variable
-     * @return string
-     */
+		if (!$handle = fopen($path, 'w')) {
+			return false;
+		}
+		if (!fwrite($handle, $content)) {
+			return false;
+		}
+		fclose($handle);
+		return true;
+	}
+	/**
+	 * Paket in die INI hinzufuegen
+	 * @param $packname string Paketname
+	 * @param $settings array Einstellungen fuer die Installation
+	 * @return unknown_type bool
+	 */
+	private function _add_pack($packname, $settings){
+		if(!isset($settings) || !is_array($settings))
+		return false;
+		$packname = strtolower($packname);
+		if(!preg_match('![a-z_0-9]!', $packname))
+		return false;
+		else if(!$this->_is_installed($packname)){
+			$this->_installed[$packname] = $settings;
+		}else if($this->_is_installed($packname)){
+			//Mehr beim Update?!
+			$this->_installed[$packname] = $settings;
+		} else
+		return false;
+		return true;
+	}
+	/**
+	 * Ausagbe der Debug Variable
+	 * @return string
+	 */
 	public function get_debug_code(){
 		return $this->_debugcodes;
 	}
 	/**
-	 * TODO Paket deinstallieren
+	 * Entfernt ein Paket vom Server
+	 * @param $package string Paketname
+	 * @param $remove_deps bool Abhaengigkeiten automatisch loeschen
+	 * @param $take_backup bool Backup erstellen
+	 * @return bool
 	 */
 	public function remove_pack($package, $remove_deps = false, $take_backup = true){
 		if(!$this->_is_installed($package)){
@@ -497,7 +513,8 @@ class pm{
 			return false;
 		}
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_PACK') . " <b>" . $package . "</b></p>";
-		//TODO Backup
+		if($take_backup)
+		$this->backup($this->_backup_type);
 		if($depend = $this->_depend_exists($package)){
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('DEPEND_EXISTS') . "</p>";
 			foreach($depend as $pack){
@@ -509,6 +526,48 @@ class pm{
 			}
 			if(!$remove_deps)
 			return false;
+		}
+		if(!is_dir(ROOTPATH . 'pack/' . $package)){
+			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->parse_lang_const('ALREADY_INSTALLED_NO_FILES') . '</a></p>';
+			return false;
+		}
+		if(file_exists(ROOTPATH . 'pack/' . $package . '/remove.php')){
+			include(ROOTPATH . 'pack/' . $package . '/remove.php');
+			$package_remove = $package . '_remove';			
+			if(function_exists($package_remove) && $return = $package_remove() !== true){
+				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_ROUTINE_FAILED') . $return . '</p>';
+				return false;
+			}
+		}
+		if(!$this->_req_remove(ROOTPATH . 'pack/' . $package)){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_FILES_FAILED') . $return . '</p>';
+			return false;
+		}
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_COMPLETED') . $return . '</p>';
+	}
+	/**
+	 * Rekursives Dateien entfernen
+	 * @param $filename string Dateiname
+	 * @return bool
+	 */
+	private function _req_remove($filename){
+		$filename = preg_replace("!\/$!", '', $filename);
+		if(!file_exists($filename))
+			return false;
+		if(!is_dir($filename)){
+			return @unlink($filename);
+		} else {
+			$dir = opendir($filename);
+			if(!$dir)
+				return false;
+			while($file = readdir($dir)){
+				if($file == '.' || $file == '..')
+					continue;
+				if(!$this->_req_remove($filename . '/' . $file))
+					return false;
+			}
+			closedir($dir);
+			return @rmdir($filename);
 		}
 	}
 	public function add_repo(){
@@ -542,18 +601,18 @@ class pm{
 	 */
 	private function _depend_exists($package){
 		if(!$this->_is_installed($package))
-			return false;
+		return false;
 		$return = array();
 		foreach($this->_installed as $name => $pack){
 			if(isset($pack['depend_runtime']) && is_array($pack['depend_runtime'])){
 				foreach($pack['depend_runtime'] as $dep){
 					if($dep == $package)
-						$return[] = $name;
+					$return[] = $name;
 				}
 			}
 		}
 		if(!count($return))
-			return false;
+		return false;
 		return $return;
 	}
 	/**
@@ -584,31 +643,31 @@ class pm{
 		$dest = preg_replace('!\/$!', '', $dest);
 		//Ordner erzeugen falls nicht existent
 		if(!is_dir(dirname($dest)) && file_exists(dirname($dest)))
-			return false; //Das ist kein Ordner...
+		return false; //Das ist kein Ordner...
 		if(is_dir($src) && !is_dir($dest)){
 			if(file_exists($dest))
-				return false; //Ist eine Datei und kein Ordner...
+			return false; //Ist eine Datei und kein Ordner...
 			if(!@mkdir($dest))
-				return false;
+			return false;
 		}
 		if(is_dir($src)){
 			//Es handelt sich um ein Verzeichniss... kopieren :)
 			if(!$dir = opendir($src))
-				return false;
+			return false;
 			$this->_debugcodes .= '<blockquote>';
 			while($item = readdir($dir)){
 				if($item == '.' || $item == '..')
-					continue;
+				continue;
 				if(!$this->_copy_req($src . '/' . $item, $dest . '/' . $item))
-					return false;
+				return false;
 			}
 			$this->_debugcodes .= '</blockquote>';
 			closedir($dir);
 		} else if(file_exists($src)) {
 			if(!@copy($src, $dest))
-				return false;
-		} else
 			return false;
+		} else
+		return false;
 		return true;
 	}
 	/**
@@ -619,24 +678,26 @@ class pm{
 	 */
 	public function check_intregrit($packname, $cfg){
 		if(!$this->_is_installed($packname))
-			return true;
+		return true;
 		if(!is_array($cfg))
-			return false;
+		return false;
 		if(isset($cfg['md5']) && is_array($cfg['md5'])){
 			foreach($cfg['md5'] as $hash){
 				$hash = explode(";", $hash);
 				if($this->_compare_version($hash[0], $this->_installed[$packname]['version']) != 0)
-					continue;
+				continue;
 				if(!file_exists(ROOTPATH . 'pack/' . $packname . '/' . $hash[1]))
-					continue;
+				continue;
 				if(md5(file_get_contents(ROOTPATH . 'pack/' . $packname . '/' . $hash[1])) != $hash[2])
-					return false;
+				return false;
 			}
 		}
 		return true;
 	}
-	/*
-	 * Debug Routine...
+	/**
+	 * Backup Routine aufrufen
+	 * @param $full bool volles backup?
+	 * @return bool
 	 */
 	public function backup($full){
 		if(!$full){
@@ -645,7 +706,10 @@ class pm{
 			return $this->_backup_full();
 		}
 	}
-	
+	/**
+	 * Inkomplettes Backup
+	 * @return bool
+	 */
 	private function _backup_dep(){
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_MAKE_DEP') .  "</p>";
 		$file_hash = $this->_get_md5_fs();
@@ -656,7 +720,7 @@ class pm{
 				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT') .  "</p>";
 				return false;
 			}
-			$list = $this->_backup_full(ROOTPATH . 'pm/backup/dep/bup/1.zip'); //TODO Zugriff blockieren
+			$list = $this->_backup_full(ROOTPATH . 'pm/backup/dep/bup/1.zip');
 			$this->_debugcodes .= "\n</blockquote>";
 			$id = 1;
 		} else {
@@ -669,9 +733,9 @@ class pm{
 			$ids = array();
 			while($file = readdir($dir)){
 				if($file == '.' || $file == '..')
-					continue;
+				continue;
 				if(!preg_match("!^[0-9]*\.zip$!", $file))
-					continue;
+				continue;
 				$ids[] = preg_replace("!^([0-9]*)\.zip$!", "$1", $file);
 			}
 			sort($ids);
@@ -688,42 +752,57 @@ class pm{
 		}
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_EDITED_FILES') . $changes .  "</p>";
 	}
+	/**
+	 * Erstellt eine Dateiliste mit geaenderten Dateien
+	 * @param $md5fs array letzte Liste
+	 * @param $filename string Dateiname oder Ordner zum starten
+	 * @param $return array Temporaer (Rekursivitaet)
+	 * @return array/bool
+	 */
 	private function _merge_md5_fs($md5fs, $filename, $return = array()){
 		if(!file_exists($filename))
-			return false;
-			
+		return false;
+		if(!is_readable($filename))
+		return $return;
 		$filename = preg_replace("!\/$!", '', $filename);
 		if(is_dir($filename)){
 			$dir = opendir($filename);
 			while($file = readdir($dir)){
 				if($file == '.' || $file == '..')
-					continue;
+				continue;
 				$return = $this->_merge_md5_fs($md5fs, $filename . '/' . $file, $return);
 			}
 			closedir($dir);
 		} else {
 			$filename = preg_replace("!^\.\/!", '', $filename);
 			if(preg_match("!^pm\/backup!", $filename))
-				return $return;
+			return $return;
 			if(!in_array(ROOTPATH . preg_replace("!^(.*?)\/.*!", "$1", $filename), $this->_full_backup_files))
-				return $return;
+			return $return;
 			if(!isset($md5fs[$filename])){
 				$return[] = $filename;
 				return $return;
 			} else if($md5fs[$filename] != md5(file_get_contents($filename))){
-				echo '<p>' . $md5fs[$filename] . ' : ' . md5(file_get_contents($filename)) . '</p>';
 				$return[] = $filename;
 				return $return;
-			} else 
-				return $return;
+			} else
+			return $return;
 		}
 		return $return;
 	}
+	/**
+	 * Schreibt Daten zu inkompletten Backups
+	 * @param $file string Dateiname der Dateiliste
+	 * @param $bup_file string Dateiname der Backup-informationsdatei
+	 * @param $list array Aktuelle Dateiliste
+	 * @param $mergewith array Liste (vorzugsweise aus $file erstellt)
+	 * @return bool/int
+	 */
 	private function _write_md5_fs($file, $bup_file, $list, $mergewith = array()){
 		if(!$mergewith)
-			$mergewith = array();
+		$mergewith = array();
 		if(!is_array($list) || !is_array($mergewith))
-			return false;
+		return false;
 		if(file_exists($bup_file)){
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT_MD5_FS') .  "</p>";
 			return false;
@@ -732,7 +811,7 @@ class pm{
 		$count = 0;
 		foreach($mergewith as $filename => $file_merge){
 			if(!file_exists($filename)){
-				$deleted[] = $filename;
+				$deleted['deleted'][] = $filename;
 				unset($mergewith[$filename]);
 				$count++;
 			}
@@ -740,13 +819,13 @@ class pm{
 		foreach($list as $file_merge){
 			if(is_dir($file_merge['filename'])){
 				if(!isset($mergewith[$file_merge['filename']]))
-					$count++;
+				$count++;
 				$mergewith[$file_merge['filename']] = 'dir';
 				continue;
 			}
 			$hash = md5(file_get_contents($file_merge['filename']));
 			if(isset($mergewith[$file_merge['filename']]) && $mergewith[$file_merge['filename']] == $hash)
-				continue;
+			continue;
 			$mergewith[$file_merge['filename']] = $hash;
 			$count ++;
 		}
@@ -754,12 +833,16 @@ class pm{
 		$this->_write_ini_file($deleted, $bup_file, false);
 		return $count;
 	}
+	/**
+	 * Parst die aktuelle Liste aller Dateien
+	 * @return array/bool
+	 */
 	private function _get_md5_fs(){
 		if(!file_exists(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'))
-			return false;
+		return false;
 		$ini = $this->_tolerance_parse_ini_file(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php');
 		if(!$ini)
-			return false;
+		return false;
 		return $ini;
 	}
 	/**
@@ -772,7 +855,7 @@ class pm{
 	private function _backup_full($bup_file = ''){
 		$date = date('Y_m_d_H_i_s', time());
 		if(!$bup_file)
-			$bup_file = ROOTPATH . 'pm/backup/full/' . $date . '.zip';
+		$bup_file = ROOTPATH . 'pm/backup/full/' . $date . '.zip';
 		require_once(ROOTPATH.'pm/include/pclzip.lib.php');
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL') . $bup_file .  "</p>";
 		if(file_exists($bup_file)){
@@ -786,10 +869,18 @@ class pm{
 		}
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DONE') . "</p>";
 		if($bup_file != ROOTPATH . 'pm/backup/full/' . $date . '.zip')
-			$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+		$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
 		else
-			$this->_debugcodes .= "\n<p><a href=\"index.php?action=dl&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+		$this->_debugcodes .= "\n<p><a href=\"index.php?action=dl&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
 		return $list;
+	}
+	/**
+	 * Setzt Dateien auf den Zustand der ID zurueck
+	 * @param $id int Zuruecksetzen bis
+	 * @return bool
+	 */
+	public function revert_changes($id){
+		//TODO
 	}
 }
 ?>

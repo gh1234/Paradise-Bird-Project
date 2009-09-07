@@ -1,3 +1,4 @@
+;<?php die('PDBP'); ?>
 [smarty]
 real_name = "Smarty Template Engine"
 description = "Dieses Paket enthällt die Smarty Template engine, welche php Code von der Ausgabe trennt."

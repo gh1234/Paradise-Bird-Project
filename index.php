@@ -15,5 +15,6 @@ if(isset($_GET['p']))
 	if(!$pm->open_index($_GET['p']))
 		$pm->show_error('404', 404);
 //$pm->install_pack('hello_world', 'test_hello_world.zip', false);
-$pm->backup(true);
+//$pm->backup(true);
+$pm->remove_pack('hello_world', true, true);
 echo $pm->get_debug_code();
