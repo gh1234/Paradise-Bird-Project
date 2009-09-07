@@ -540,7 +540,7 @@ class pm{
 			}
 		}
 		if(!$this->_req_remove(ROOTPATH . 'pack/' . $package)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_FILES_FAILED') . $return . '</p>';
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_FILES_FAILED') . '</p>';
 			return false;
 		}
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_COMPLETED') . $return . '</p>';
