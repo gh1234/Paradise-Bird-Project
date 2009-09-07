@@ -51,13 +51,15 @@ class pm{
 	public function pm(){
 		if(!$this->_errcodes = $this->_load_lang_file(ROOTPATH."pm/lang/de/error.ini.php"))
 		die('Errorfile cannot be loaded.');
-		if(!$this->_installed = $this->_load_pack_list(ROOTPATH."pm/config/installed.ini.php")){
-			$this->show_error('PACKLIST_WRONG');
-			return false;
-		}
-		if(!$this->_load_packages($this->_installed)){
-			$this->show_error('PACKLIST_WRONG');
-			return false;
+		if(count(parse_ini_file(ROOTPATH."pm/config/installed.ini.php")) != 0){
+			if(!$this->_installed = $this->_load_pack_list(ROOTPATH."pm/config/installed.ini.php")){
+				$this->show_error('PACKLIST_WRONG');
+				return false;
+			}
+			if(!$this->_load_packages($this->_installed)){
+				$this->show_error('PACKLIST_WRONG');
+				return false;
+			}
 		}
 		$backup = parse_ini_file(ROOTPATH . 'pm/config/backup.ini.php', false);
 		foreach($backup['file'] as $file){
@@ -227,7 +229,7 @@ class pm{
 	 */
 	public function show_error($errorcode, $http = 200){
 		header('HTTP/ '.$http);
-		$errorcode = $this->_parse_lang_const($errorcode);
+		$errorcode = $this->parse_lang_const($errorcode);
 		include(ROOTPATH.'pm/include/tpl/error.tpl.php');
 		exit();
 	}
@@ -508,11 +510,11 @@ class pm{
 	 * @return bool
 	 */
 	public function remove_pack($package, $remove_deps = false, $take_backup = true){
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_PACK') . " <b>" . $package . "</b></p>";
 		if(!$this->_is_installed($package)){
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('NOT_INSTALLED') . "</p>";
 			return false;
 		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_PACK') . " <b>" . $package . "</b></p>";
 		if($take_backup)
 		$this->backup($this->_backup_type);
 		if($depend = $this->_depend_exists($package)){
@@ -543,7 +545,13 @@ class pm{
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_FILES_FAILED') . '</p>';
 			return false;
 		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_COMPLETED') . $return . '</p>';
+		unset($this->_installed[$package]);
+		if(!$this->_write_ini_file($this->_installed, ROOTPATH . 'pm/config/installed.ini.php', true)){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_INI_FAILED') . '</p>';
+			return false;
+		}
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_COMPLETED') . '</p>';
+		return true;
 	}
 	/**
 	 * Rekursives Dateien entfernen

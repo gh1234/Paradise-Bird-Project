@@ -1,6 +1,6 @@
 ;<?php echo 'PDBP'; ?>
 404 = "<h1>404 - Seite wurde nicht gefunden!</h1> <p>Die von ihnen aufgerufene Seite konnte nicht gefunden werden oder ist zur Zeit nicht verfügbar, sollten sie einen Link auf der Seite verwendet haben, melden sie sich bitte bei einem Administrator.</p>"
-PACKLIST_WRONG = "Die Paketliste ist fehlerhaft oder nicht existent."
+PACKLIST_WRONG = "Die Paketliste ist fehlerhaft oder nicht existent oder leer."
 INSTALL = "Es wurde folgendes Paket zur Installation ausgewählt: "
 ALREADY_INSTALLED = "Es ist bereits ein Paket gleichen namens installiert, es wird überprüft in welchem Zusammenhang die Pakete stehen."
 ALREADY_INSTALLED_NEWER = "Das installierte Paket ist neuer, sie können die Installation forcieren um das Paket zu überschreiben"
@@ -44,4 +44,5 @@ BUP_EDITED_FILES = "Es wurde folgende Anzahl Daten editiert: "
 BUP_DEP_BUP_NOT_OPENED = "Der Abhängigkeits Backuporner konnte nicht geöffnet werden."
 REMOVE_ROUTINE_FAILED = "Es ist ein Fehler in der Paketinternen löschroutine aufgetreten, wenden sie sich an die Entwickler. Fehlercode (Falls vorhanden): "
 REMOVE_FILES_FAILED = "Es ist ein Fehler beim löschen des Ordners aufgetreten."
+REMOVE_INI_FAILED = "Es ist ein Fehler beim löschen der Modulinformationen aufgetreten."
 REMOVE_COMPLETED = "Die Deinstallation war erfolgreich!"
