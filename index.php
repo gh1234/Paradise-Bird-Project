@@ -14,8 +14,8 @@ $pm = new pm();
 if(isset($_GET['p']))
 	if(!$pm->open_index($_GET['p']))
 		$pm->show_error('404', 404);
-//$pm->install_pack('hello_world', 'test_hello_world.zip', false);
-$pm->backup(false);
+//$pm->install_pack('adodb', 'adodb.zip', false);
+//$pm->backup(false, 'Spaßbackup');
 //$pm->remove_pack('hello_world', true, true);
-//$pm->revert_changes(2);
+//$pm->revert_changes(1);
 echo $pm->get_debug_code();

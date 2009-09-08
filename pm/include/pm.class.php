@@ -812,6 +812,7 @@ class pm{
 	private function _write_md5_fs($file, $bup_file, $list, $mergewith = array(), $comment = 'Backup'){
 		if(!$mergewith)
 		$mergewith = array();
+		$info = array();
 		$info['time'] = time();
 		$info['comment'] = $comment;
 		if(!is_array($list) || !is_array($mergewith))
@@ -820,7 +821,6 @@ class pm{
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT_MD5_FS') .  "</p>";
 			return false;
 		}
-		$info = array();
 		$count = 0;
 		foreach($mergewith as $filename => $file_merge){
 			if(!file_exists($filename)){
@@ -866,7 +866,7 @@ class pm{
 	 * @param $bup_file string Dateiname zum speichern
 	 * @return bool/array
 	 */
-	private function _backup_full($bup_file = ''){
+	private function _backup_full($bup_file = ''){ //TODO Datenbankbackup
 		$date = date('Y_m_d_H_i_s', time());
 		if(!$bup_file)
 		$bup_file = ROOTPATH . 'pm/backup/full/' . $date . '.zip';
@@ -978,10 +978,12 @@ class pm{
 			}
 			foreach($change as $file){
 				if(file_exists($file) && !is_dir($file)){
-					unlink($file);
+					if(is_writable($file))
+						unlink($file);
 				}
-				if(isset($diff[$file]))
+				if(isset($diff[$file])){
 					unset($diff[$file]);
+				}
 			}
 			$zip = new PclZip(ROOTPATH . 'pm/backup/dep/bup/' . $i . '.zip');
 			$extracted = $zip->extract(PCLZIP_OPT_PATH, ROOTPATH);
