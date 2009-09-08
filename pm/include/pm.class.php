@@ -256,7 +256,7 @@ class pm{
 	public function install_pack($packname, $packfile = '', $remote = false, $force = false){
 		//Paket entpacken und pruefen
 		if($packfile){
-			$this->backup($this->_backup_type);
+			$this->backup($this->_backup_type, $this->parse_lang_const('BACKUP_INSTALL') . $packname);
 			require_once(ROOTPATH.'pm/include/pclzip.lib.php');
 			if(!file_exists($packfile)){
 				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('PACK_NOT_EXISTS') . $packname . '</p>';
@@ -516,7 +516,7 @@ class pm{
 			return false;
 		}
 		if($take_backup)
-		$this->backup($this->_backup_type);
+		$this->backup($this->_backup_type, $this->parse_lang_const('BACKUP_REMOVE') . $package);
 		if($depend = $this->_depend_exists($package)){
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('DEPEND_EXISTS') . "</p>";
 			foreach($depend as $pack){
@@ -705,20 +705,22 @@ class pm{
 	/**
 	 * Backup Routine aufrufen
 	 * @param $full bool volles backup?
+	 * @param $comment string Kommentar fuer backup_dep
 	 * @return bool
 	 */
-	public function backup($full){
+	public function backup($full, $comment = 'Backup'){
 		if(!$full){
-			return $this->_backup_dep();
+			return $this->_backup_dep($comment);
 		} else {
 			return $this->_backup_full();
 		}
 	}
 	/**
 	 * Inkomplettes Backup
+	 * @param $comment string Kommentar
 	 * @return bool
 	 */
-	private function _backup_dep(){
+	private function _backup_dep($comment = 'Backup'){
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_MAKE_DEP') .  "</p>";
 		$file_hash = $this->_get_md5_fs();
 		if(!$file_hash){
@@ -754,7 +756,7 @@ class pm{
 			$list = $zip->create($merged);
 		}
 		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_WRITE_MD5_FS') .  "</p>";
-		if(false === $changes = $this->_write_md5_fs(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php', ROOTPATH . 'pm/backup/dep/data/' . $id . '.ini.php', $list, $this->_tolerance_parse_ini_file(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'))){
+		if(false === $changes = $this->_write_md5_fs(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php', ROOTPATH . 'pm/backup/dep/data/' . $id . '.ini.php', $list, $this->_tolerance_parse_ini_file(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'), $comment)){
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_WRITE_MD5_FS_FAILED') . "</p>";
 			return false;
 		}
@@ -804,22 +806,25 @@ class pm{
 	 * @param $bup_file string Dateiname der Backup-informationsdatei
 	 * @param $list array Aktuelle Dateiliste
 	 * @param $mergewith array Liste (vorzugsweise aus $file erstellt)
+	 * @param $comment string Kommentar
 	 * @return bool/int
 	 */
-	private function _write_md5_fs($file, $bup_file, $list, $mergewith = array()){
+	private function _write_md5_fs($file, $bup_file, $list, $mergewith = array(), $comment = 'Backup'){
 		if(!$mergewith)
 		$mergewith = array();
+		$info['time'] = time();
+		$info['comment'] = $comment;
 		if(!is_array($list) || !is_array($mergewith))
 		return false;
 		if(file_exists($bup_file)){
 			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT_MD5_FS') .  "</p>";
 			return false;
 		}
-		$deleted = array();
+		$info = array();
 		$count = 0;
 		foreach($mergewith as $filename => $file_merge){
 			if(!file_exists($filename)){
-				$deleted['deleted'][] = $filename;
+				$info['deleted'][] = $filename;
 				unset($mergewith[$filename]);
 				$count++;
 			}
@@ -835,10 +840,11 @@ class pm{
 			if(isset($mergewith[$file_merge['filename']]) && $mergewith[$file_merge['filename']] == $hash)
 			continue;
 			$mergewith[$file_merge['filename']] = $hash;
+			$info['edited'][] = $file_merge['filename'];
 			$count ++;
 		}
 		$this->_write_ini_file($mergewith, $file, false);
-		$this->_write_ini_file($deleted, $bup_file, false);
+		$this->_write_ini_file($info, $bup_file, false);
 		return $count;
 	}
 	/**
@@ -882,13 +888,105 @@ class pm{
 		$this->_debugcodes .= "\n<p><a href=\"index.php?action=dl&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
 		return $list;
 	}
+	private function _gen_md5_fs($filename = ROOTPATH, $return = array()){
+		if(!file_exists($filename))
+		return false;
+		if(!is_readable($filename))
+		return $return;
+		$filename = preg_replace("!\/$!", '', $filename);
+		if(is_dir($filename)){
+			$filename = preg_replace("!^\.\/!", '', $filename);
+			if(preg_match("!^pm\/backup!", $filename))
+				return $return;
+			$return[$filename] = 'dir';
+			$dir = opendir($filename);
+			while($file = readdir($dir)){
+				if($file == '.' || $file == '..')
+				continue;
+				$return = $this->_gen_md5_fs($filename . '/' . $file, $return);
+			}
+			closedir($dir);
+		} else {
+			$filename = preg_replace("!^\.\/!", '', $filename);
+			if(preg_match("!^pm\/backup!", $filename))
+			return $return;
+			$return[$filename] = md5(file_get_contents($filename));
+			return $return;
+		}
+		return $return;
+	}
 	/**
 	 * Setzt Dateien auf den Zustand der ID zurueck
 	 * @param $id int Zuruecksetzen bis
 	 * @return bool
 	 */
 	public function revert_changes($id){
-		//TODO
+		require_once(ROOTPATH.'pm/include/pclzip.lib.php');
+		if(!file_exists(ROOTPATH . 'pm/backup/dep/bup/' . $id . '.zip') || !file_exists(ROOTPATH . 'pm/backup/dep/data/' . $id . '.ini.php')){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_REVERT_INCOMPLETE_ERROR') . "</p>";
+			return false;
+		}
+		//Erst veraenderungen herausfinden
+		$last_bup = $this->_get_md5_fs();
+		if(!$last_bup){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_REVERT_INCOMPLETE_ERROR') . "</p>";
+			return false;
+		}
+		$act_md5 = $this->_gen_md5_fs(ROOTPATH);
+		$diff = array_diff($last_bup, $act_md5);
+		$dir = opendir(ROOTPATH . 'pm/backup/dep/bup');
+		if(!$dir){
+			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_BUP_NOT_OPENED') .  "</p>";
+			return false;
+		}
+		$ids = array();
+		while($file = readdir($dir)){
+			if($file == '.' || $file == '..')
+			continue;
+			if(!preg_match("!^[0-9]*\.zip$!", $file))
+			continue;
+			$ids[] = preg_replace("!^([0-9]*)\.zip$!", "$1", $file);
+		}
+		sort($ids);
+		$id_max = $ids[count($ids) -1];
+		closedir($dir);
+		for($i = $id_max; $i>0; $i--){
+			if(!file_exists(ROOTPATH . 'pm/backup/dep/bup/' . $i . '.zip') || !file_exists(ROOTPATH . 'pm/backup/dep/data/' . $i . '.ini.php'))
+				continue;
+			$current_ini = parse_ini_file(ROOTPATH . 'pm/backup/dep/data/' . $i . '.ini.php');
+			if(!isset($current_ini['deleted']))
+				$current_ini['deleted'] = array();
+			if(!isset($current_ini['edited']))
+				$current_ini['edited'] = array();
+			$change = array_merge($current_ini['edited'], $current_ini['deleted']);
+			if($id > $i){
+				if(count($diff) <= 0)
+					return true;
+				//ID ist groesser
+				//Also muss noch was eingespielt werden, aber nicht alles...
+				foreach($diff as $file){
+					if(isset($change[$file])){
+						if(file_exists($file) && !is_dir($file)){
+							unlink($file);
+						}
+						unset($change[$file]);
+						if(count($diff) <= 0)
+							return true;
+					}
+				}
+				continue;
+			}
+			foreach($change as $file){
+				if(file_exists($file) && !is_dir($file)){
+					unlink($file);
+				}
+				if(isset($diff[$file]))
+					unset($diff[$file]);
+			}
+			$zip = new PclZip(ROOTPATH . 'pm/backup/dep/bup/' . $i . '.zip');
+			$extracted = $zip->extract(PCLZIP_OPT_PATH, ROOTPATH);
+		}
+		return true;
 	}
 }
 ?>

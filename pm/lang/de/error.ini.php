@@ -46,3 +46,6 @@ REMOVE_ROUTINE_FAILED = "Es ist ein Fehler in der Paketinternen löschroutine au
 REMOVE_FILES_FAILED = "Es ist ein Fehler beim löschen des Ordners aufgetreten."
 REMOVE_INI_FAILED = "Es ist ein Fehler beim löschen der Modulinformationen aufgetreten."
 REMOVE_COMPLETED = "Die Deinstallation war erfolgreich!"
+BUP_REVERT_INCOMPLETE_ERROR = "Das Backup ist nicht komplett, es fehlen Daten."
+BACKUP_REMOVE = "Backup vor entfernung des Paketes: "
+BACKUP_INSTALL = "Backup vor installieren des Paketes: "
