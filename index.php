@@ -10,12 +10,14 @@ if(isset($_GET['action']) && $_GET['action'] == 'dl'){
 	}
 }
 require_once("pm/include/pm.class.php");
+global $pm;
 $pm = new pm();
 if(isset($_GET['p']))
 	if(!$pm->open_index($_GET['p']))
 		$pm->show_error('404', 404);
 //$pm->install_pack('adodb', 'adodb.zip', false);
-$pm->backup(true);
+//$pm->backup(true);
 //$pm->remove_pack('hello_world', true, true);
 //$pm->revert_changes(1);
+$pm->generate_cfg_form('adodb');
 echo $pm->get_debug_code();

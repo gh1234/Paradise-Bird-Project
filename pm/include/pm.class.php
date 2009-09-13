@@ -135,6 +135,7 @@ class pm{
 		if(!is_dir(ROOTPATH.'pack/' . $packname) || !file_exists('pack/' . $packname . '/_init.php'))
 		return false;
 		$modpath = 'pack/' . $packname . '/';
+		$config = $this->_parse_config($packname);
 		require(ROOTPATH.'pack/' . $packname . '/_init.php');
 		$this->_loaded[] = $packname;
 		return true;
@@ -233,6 +234,12 @@ class pm{
 		include(ROOTPATH.'pm/include/tpl/error.tpl.php');
 		exit();
 	}
+	public function show_pack_error($errorcode, $package, $http = 200){
+		header('HTTP/ '.$http);
+		$errorcode = $this->parse_pack_lang_const($errorcode, $package);
+		include(ROOTPATH.'pm/include/tpl/error.tpl.php');
+		exit();
+	}
 	/**
 	 * Sprachkonstante "uebersetzen"
 	 * @param $errorcode Sprachkonstante
@@ -243,6 +250,15 @@ class pm{
 		$errorcode = "n/a";
 		else
 		$errorcode = $this->_errcodes[$errorcode];
+		return $errorcode;
+	}
+	public function parse_pack_lang_const($code, $package){
+		if(!isset($this->_errcodes[$package]))
+			$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
+		if(!isset($this->_errcodes[$package][$code]))
+			$errorcode = "n/a";
+		else
+			$errorcode = $this->_errcodes[$package][$code];
 		return $errorcode;
 	}
 	/**
@@ -375,6 +391,9 @@ class pm{
 	}
 	/**
 	 * Parst eine INI Datei, ohne ueber Zeichen wie / oder aehnlichem "zu stolpern"
+	 * Parst ausserdem auch mehrdimensionale Arrays fehlerfrei
+	 * Dennoch sollte parse_ini_file, grade wegen der niedrigeren Tolleranzgrenze verwendet werden
+	 * Diese Funktion nur verwenden wenn nicht anders moeglich, andere Funktion ist besser erprobt.
 	 * @param $file string Dateiname
 	 * @param $has_sections bool Sektionen
 	 * @return array/bool
@@ -386,38 +405,58 @@ class pm{
 		if(!$file)
 		return false;
 		$return = array();
-		$section = 0;
+		$section = 0; //Section ([*] inder ini Datei) initialisieren
 		while(!feof($file)){
 			$line = fgets($file, 1000);
 			if(preg_match("!^;!", $line))
 			continue;
-			if($has_sections && preg_match("!^\[.*\]$!", $line)){
-				$section = preg_replace("!^\[(.*)\]$", "$1", $line);
+			$line = preg_replace("!\r|\n$!", '', $line);
+			if($has_sections && preg_match("!^\[.*\]$!", $line)){ //Ueberpruefen ob eine Section geparst wurde
+				$section = preg_replace("!^\[(.*)\]$!", "$1", $line);
 				continue;
 			}
 			$line = explode("=", $line);
 			if(count($line) != 2)
 			continue;
+			/*
+			 * Strings Formatieren
+			 */
 			$line[0] = preg_replace("!^ !", '', $line[0]);
 			$line[0] = preg_replace("! $!", '', $line[0]);
 			$line[1] = preg_replace("!^ !", '', $line[1]);
 			$line[1] = preg_replace("! $!", '', $line[1]);
-			$line[1] = preg_replace("!\n$!", '', $line[1]);
-			if(!$has_sections){
-				if(preg_match('!\[\]$!', $line[0])){
-					if(!isset($return[preg_replace("!\[\]$!", '', $line[0])]))
-					$return[preg_replace("!\[\]$!", '', $line[0])] = array();
-					$return[preg_replace("!\[\]$!", '', $line[0])][] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
-				} else {
-					$return[preg_replace("!\[\]$!", '', $line[0])] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
+			$line[1] = preg_replace("!\r|\n$!", '', $line[1]);
+			/*
+			 * Ende
+			 */
+			$array_names = array(); //Variable fuer mehrdimensionale arrays in INI Dateien
+			$var = '';
+			while(true){
+				if(!$has_sections)
+				$var = '$return';
+				else
+				$var = '$return["'  .$section . '"]';
+				if(!preg_match('!\[.*\]!', $line[0])){
+					eval($var . "['" . str_replace("'", "\\'", $line[0]) . "']='" . str_replace("'", "\\'", $line[1]) . "';");
 				}
-			} else {
-				if(preg_match('!\[\]$!', $line[0])){
-					if(!isset($return[$section][preg_replace("!\[\]$!", '', $line[0])]))
-					$return[$section][preg_replace("!\[\]$!", '', $line[0])] = array();
-					$return[$section][preg_replace("!\[\]$!", '', $line[0])][] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
-				} else {
-					$return[$section][preg_replace("!\[\]$!", '', $line[0])] = preg_replace("!^\"(.*)\"!", "$1", $line[1]);
+				$var .= '["' . preg_replace("!\[.*\]!", '', $line[0]) . '"]';
+				$array_names[] = preg_replace('!.*?\[(.*?)\]\[.*\].*!', "$1", $line[0], 1);
+				if(in_array($line[0], $array_names)){
+					$array_names[array_search($line[0], $array_names)] = preg_replace('!.*\[(.*?)\].*!', "$1", $line[0], 1);
+				}
+				foreach($array_names as $name){
+					if($name == '')
+					$var .= '[]';
+					else
+					$var .= '["' . $name . '"]';
+				}
+				$buffer = $line[0];
+				$line[0] = preg_replace('!\[.*?\](\[.*\].*)!', "$1", $line[0], 1);
+				if($buffer == $line[0])
+				$line[0] = preg_replace('!\[.*?\]!', '', $line[0], 1);
+				if(!preg_match('!\[.*\]!', $line[0])){
+					eval($var . "='" . str_replace("'", "\\'", $line[1]) . "';");
+					break;
 				}
 			}
 		}
@@ -535,7 +574,7 @@ class pm{
 		}
 		if(file_exists(ROOTPATH . 'pack/' . $package . '/remove.php')){
 			include(ROOTPATH . 'pack/' . $package . '/remove.php');
-			$package_remove = $package . '_remove';			
+			$package_remove = $package . '_remove';
 			if(function_exists($package_remove) && $return = $package_remove() !== true){
 				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_ROUTINE_FAILED') . $return . '</p>';
 				return false;
@@ -561,18 +600,18 @@ class pm{
 	private function _req_remove($filename){
 		$filename = preg_replace("!\/$!", '', $filename);
 		if(!file_exists($filename))
-			return false;
+		return false;
 		if(!is_dir($filename)){
 			return @unlink($filename);
 		} else {
 			$dir = opendir($filename);
 			if(!$dir)
-				return false;
+			return false;
 			while($file = readdir($dir)){
 				if($file == '.' || $file == '..')
-					continue;
+				continue;
 				if(!$this->_req_remove($filename . '/' . $file))
-					return false;
+				return false;
 			}
 			closedir($dir);
 			return @rmdir($filename);
@@ -867,26 +906,26 @@ class pm{
 	 * @return bool/array
 	 */
 	private function _backup_full($bup_file = ''){ //TODO Datenbankbackup
-		$date = date('Y_m_d_H_i_s', time());
-		if(!$bup_file)
-		$bup_file = ROOTPATH . 'pm/backup/full/' . $date . '.zip';
-		require_once(ROOTPATH.'pm/include/pclzip.lib.php');
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL') . $bup_file .  "</p>";
-		if(file_exists($bup_file)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL_EXISTS') . $bup_file .  "</p>";
-			return false;
-		}
-		$zip = new PclZip($bup_file);
-		if(!$list = $zip->create($this->_full_backup_files)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_ERROR_PCLZIP') . $zip->errorInfo(true) .  "</p>";
-			return false;
-		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DONE') . "</p>";
-		if($bup_file != ROOTPATH . 'pm/backup/full/' . $date . '.zip')
-		$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
-		else
-		$this->_debugcodes .= "\n<p><a href=\"index.php?action=dl&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
-		return $list;
+	$date = date('Y_m_d_H_i_s', time());
+	if(!$bup_file)
+	$bup_file = ROOTPATH . 'pm/backup/full/' . $date . '.zip';
+	require_once(ROOTPATH.'pm/include/pclzip.lib.php');
+	$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL') . $bup_file .  "</p>";
+	if(file_exists($bup_file)){
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL_EXISTS') . $bup_file .  "</p>";
+		return false;
+	}
+	$zip = new PclZip($bup_file);
+	if(!$list = $zip->create($this->_full_backup_files)){
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_ERROR_PCLZIP') . $zip->errorInfo(true) .  "</p>";
+		return false;
+	}
+	$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DONE') . "</p>";
+	if($bup_file != ROOTPATH . 'pm/backup/full/' . $date . '.zip')
+	$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+	else
+	$this->_debugcodes .= "\n<p><a href=\"index.php?action=dl&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+	return $list;
 	}
 	private function _gen_md5_fs($filename = ROOTPATH, $return = array()){
 		if(!file_exists($filename))
@@ -897,7 +936,7 @@ class pm{
 		if(is_dir($filename)){
 			$filename = preg_replace("!^\.\/!", '', $filename);
 			if(preg_match("!^pm\/backup!", $filename))
-				return $return;
+			return $return;
 			$return[$filename] = 'dir';
 			$dir = opendir($filename);
 			while($file = readdir($dir)){
@@ -952,16 +991,16 @@ class pm{
 		closedir($dir);
 		for($i = $id_max; $i>0; $i--){
 			if(!file_exists(ROOTPATH . 'pm/backup/dep/bup/' . $i . '.zip') || !file_exists(ROOTPATH . 'pm/backup/dep/data/' . $i . '.ini.php'))
-				continue;
+			continue;
 			$current_ini = parse_ini_file(ROOTPATH . 'pm/backup/dep/data/' . $i . '.ini.php');
 			if(!isset($current_ini['deleted']))
-				$current_ini['deleted'] = array();
+			$current_ini['deleted'] = array();
 			if(!isset($current_ini['edited']))
-				$current_ini['edited'] = array();
+			$current_ini['edited'] = array();
 			$change = array_merge($current_ini['edited'], $current_ini['deleted']);
 			if($id > $i){
 				if(count($diff) <= 0)
-					return true;
+				return true;
 				//ID ist groesser
 				//Also muss noch was eingespielt werden, aber nicht alles...
 				foreach($diff as $file){
@@ -971,7 +1010,7 @@ class pm{
 						}
 						unset($change[$file]);
 						if(count($diff) <= 0)
-							return true;
+						return true;
 					}
 				}
 				continue;
@@ -979,7 +1018,7 @@ class pm{
 			foreach($change as $file){
 				if(file_exists($file) && !is_dir($file)){
 					if(is_writable($file))
-						unlink($file);
+					unlink($file);
 				}
 				if(isset($diff[$file])){
 					unset($diff[$file]);
@@ -989,6 +1028,76 @@ class pm{
 			$extracted = $zip->extract(PCLZIP_OPT_PATH, ROOTPATH);
 		}
 		return true;
+	}
+	/*
+	 * Konfigurationsroutinen
+	 */
+	private function _parse_config($package){
+		$return = array();
+		if(!is_dir(ROOTPATH . 'pack/' . $package . '/_cfg')){
+			return false;
+		}
+		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
+		return false;
+		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
+		$cfdata = parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php');
+		foreach($cfdata as $name => $var){
+			if(!isset($cfinf[$name])){
+				continue;
+			}
+			$var = $this->_check_intreg_config($var, $cfinf[$name]);
+			$return[$name] = $var;
+		}
+		foreach($cfinf as $name => $var){
+			if(!isset($return[$name])){
+				$return[$name] = NULL;
+			}
+		}
+		return $return;
+	}
+	private function _check_intreg_config($var, $data){
+		if(!isset($data['dtype']))
+		return false;
+		if(!file_exists(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php'))
+			return false;
+		include_once(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php');
+		if(!function_exists($data['dtype'] . '_check_intreg'))
+			return false;
+		$funcname = $data['dtype'] . '_check_intreg';
+		return $funcname($var, $data);
+	}
+	public function generate_cfg_form($package){
+		if(!$this->_is_installed($package))
+			return $false;
+		$packname = $this->_installed[$package]['real_name'];
+		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
+		return false;
+		$form = '<table class="cfgform">' . "\n" . ' <form method="POST">';
+		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
+		$cfdata = $this->_parse_config($package);
+		$class = 1;
+		$js = '';
+		foreach($cfinf as $name => $data){
+			if($class >= 3)
+			$class = 1;
+			if(!isset($data['dtype']))
+				continue;
+			if(!file_exists(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php'))
+				continue;
+			include_once(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php');
+			if(!function_exists($data['dtype'] . '_gen_form'))
+				continue;
+			$funcname = $data['dtype'] . '_gen_form';
+			$form .= ($add = $funcname($name, $cfdata[$name], $data, $this, $package, $class))?$add:'';
+			if(function_exists($data['dtype'] . '_gen_js')){
+				$funcname = $data['dtype'] . '_gen_js';
+				$js .= $funcname($this);
+			}
+			$class++;
+		}
+		$form .= "\n" . ' </form>';
+		$form .= "\n" . '</table>';
+		include(ROOTPATH . 'pm/include/tpl/form.tpl.php');
 	}
 }
 ?>

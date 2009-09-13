@@ -23,6 +23,7 @@ author = "GH1234"
 mail = "jonas.schwabe@gmail.com"
 license = "gpl"
 website = "http://www.cascaded-web.com"
+depend_runtime[] = "adodb"
 [adodb]
 real_name = "AdoDB"
 description = "Datenbank Abstraktionsschicht."
