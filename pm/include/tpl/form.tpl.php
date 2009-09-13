@@ -20,6 +20,9 @@ tr.c2{
 input{
  background: transparent;
 }
+select{
+ background: transparent;
+}
 -->
 </style>
 <?php 

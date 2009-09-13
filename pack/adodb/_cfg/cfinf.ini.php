@@ -2,11 +2,11 @@
 host[dtype] = string
 host[extra] = 100
 dbtype[dtype] = select
-dbtype[extra][] = mysql
-dbtype[extra][] = mysqli
-dbtype[extra][] = mssql
-dbtype[extra][] = postgres
-dbtype[extra][] = sqlite
+dbtype[extra][] = mysql|MySQL
+dbtype[extra][] = mysqli|MySQLi
+dbtype[extra][] = mssql|MsSQL
+dbtype[extra][] = postgres|PostgresSQL
+dbtype[extra][] = sqlite|SQLite
 user[dtype] = string
 password[dtype] = password
 database[dtype] = string

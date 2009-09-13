@@ -8,5 +8,17 @@ function bool_check_intreg($var, $data){
 }
 function bool_gen_form($name, $var, $data, $pm, $package, $class = 1){
 	(isset($var) && $var)?$extra = ' checked="true"':$extra = '';
-	return "\n" . '  <tr class="c' . $class . '"><td><p class="tab"><label>' . $pm->parse_pack_lang_const('LAB_' . $name, $package) . ': </label></p></td><td><p class="tab"><input name="' . $name . '" id="' . $name . '" type="checkbox"' . $extra . '></p></td></tr>';
+	$return  = "\n" . '  <tr class="c' . $class . '">';
+	$return .= "\n" . '   <td>';
+	$return .= "\n" . '    <p class="tab">';
+	$return .= "\n" . '     <label>' . $pm->parse_pack_lang_const('LAB_' . $name, $package) . ': </label>';
+	$return .= "\n" . '    </p>';
+	$return .= "\n" . '   </td>';
+	$return .= "\n" . '   <td>';
+	$return .= "\n" . '    <p class="tab">';
+	$return .= "\n" . '     <input name="' . $name . '" id="' . $name . '" type="checkbox"' . $extra . ' />';
+	$return .= "\n" . '    </p>';
+	$return .= "\n" . '   </td>';
+	$return .= "\n" . '  </tr>';
+	return $return;
 }

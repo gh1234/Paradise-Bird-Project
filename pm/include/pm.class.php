@@ -1072,7 +1072,7 @@ class pm{
 		$packname = $this->_installed[$package]['real_name'];
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
-		$form = '<table class="cfgform">' . "\n" . ' <form method="POST">';
+		$form = '<form method="post" action="?action=save">' . "\n" . '<table class="cfgform">';
 		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$cfdata = $this->_parse_config($package);
 		$class = 1;
@@ -1095,8 +1095,8 @@ class pm{
 			}
 			$class++;
 		}
-		$form .= "\n" . ' </form>';
-		$form .= "\n" . '</table>';
+		$form .= "\n" . ' </table>';
+		$form .= "\n" . '</form>';
 		include(ROOTPATH . 'pm/include/tpl/form.tpl.php');
 	}
 }
