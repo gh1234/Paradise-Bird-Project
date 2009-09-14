@@ -19,5 +19,8 @@ if(isset($_GET['p']))
 //$pm->backup(true);
 //$pm->remove_pack('hello_world', true, true);
 //$pm->revert_changes(1);
+if(isset($_GET['action']) && $_GET['action'] == 'save' && isset($_GET['package'])){
+	$return = $pm->save_form($_GET['package']);
+}
 $pm->generate_cfg_form('adodb');
 echo $pm->get_debug_code();

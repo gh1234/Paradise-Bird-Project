@@ -1072,7 +1072,7 @@ class pm{
 		$packname = $this->_installed[$package]['real_name'];
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
-		$form = '<form method="post" action="?action=save">' . "\n" . '<table class="cfgform">';
+		$form = '<form method="post" action="?action=save&package=' .$package . '">' . "\n" . '<table class="cfgform">';
 		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$cfdata = $this->_parse_config($package);
 		$class = 1;
@@ -1098,6 +1098,18 @@ class pm{
 		$form .= "\n" . ' </table>';
 		$form .= "\n" . '</form>';
 		include(ROOTPATH . 'pm/include/tpl/form.tpl.php');
+	}
+	public function save_form($package){
+		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
+		$save = array();
+		foreach($cfinf as $data => $info){
+			if(isset($_POST[$data])){
+				$save[$data] = $this->_check_intreg_config($_POST[$data], $info);
+			}
+		}
+		if(in_array(false, $save))
+		return false;
+		return $this->_write_ini_file($save, ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php');
 	}
 }
 ?>
