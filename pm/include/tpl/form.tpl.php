@@ -6,7 +6,7 @@
 <style type="text/css">
 <!--
 table.cfgform{
- width: 50%;
+ width: 100%;
 }
 p.tab{
  height: 10px;

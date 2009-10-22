@@ -923,8 +923,12 @@ class pm{
 	$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DONE') . "</p>";
 	if($bup_file != ROOTPATH . 'pm/backup/full/' . $date . '.zip')
 	$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
-	else
-	$this->_debugcodes .= "\n<p><a href=\"index.php?action=dl&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+	else{
+		if($this->_is_installed('backup_loader'))
+		$this->_debugcodes .= "\n<p><a href=\"index.php?p=backup_loader&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+		else
+		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DOWNLOAD_NO_EXT') . "</p>";
+	}
 	return $list;
 	}
 	private function _gen_md5_fs($filename = ROOTPATH, $return = array()){
