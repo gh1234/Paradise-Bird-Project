@@ -9,7 +9,7 @@ table.cfgform{
  width: 100%;
 }
 p.tab{
- height: 10px;
+ height: auto;
 }
 tr.c1{
  background-color: #CCCCCC;

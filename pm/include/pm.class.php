@@ -426,6 +426,8 @@ class pm{
 			$line[1] = preg_replace("!^ !", '', $line[1]);
 			$line[1] = preg_replace("! $!", '', $line[1]);
 			$line[1] = preg_replace("!\r|\n$!", '', $line[1]);
+			$line[1] = preg_replace("!^\"!", '', $line[1]);
+			$line[1] = preg_replace("!\"$!", '', $line[1]);
 			/*
 			 * Ende
 			 */
@@ -1072,7 +1074,7 @@ class pm{
 	}
 	public function generate_cfg_form($package){
 		if(!$this->_is_installed($package))
-			return $false;
+			return false;
 		$packname = $this->_installed[$package]['real_name'];
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
