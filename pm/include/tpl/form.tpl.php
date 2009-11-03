@@ -29,7 +29,6 @@ select{
 echo $js;
 ?>
 </head>
-
 <body>
 <?php echo $form; ?>
 </body>

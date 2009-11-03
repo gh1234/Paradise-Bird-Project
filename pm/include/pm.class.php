@@ -1102,10 +1102,13 @@ class pm{
 			$class++;
 		}
 		$form .= "\n" . ' </table>';
+		$form .= "\n" . ' <input type="hidden" name="pdbpforms" value="true" />';
 		$form .= "\n" . '</form>';
 		include(ROOTPATH . 'pm/include/tpl/form.tpl.php');
 	}
 	public function save_form($package){
+		if(!isset($_POST['pdbpforms']))
+			return false;
 		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$save = array();
 		foreach($cfinf as $data => $info){

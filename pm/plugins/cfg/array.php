@@ -1,14 +1,7 @@
 <?php
 function array_check_intreg($var, $data){
-	$var = intval($var);
-	if(!is_int($var))
-	return false;
-	if(isset($data['extra']) && is_array($data['extra'])){
-		if(isset($data['extra'][0]) && is_int($data['extra'][0]) && $data['extra'][0] < $var) //Bei int minimale Zahl pruefen
+	if(!is_array($var))
 		return false;
-		if(isset($data['extra'][1]) && is_int($data['extra'][1]) && $data['extra'][1] > $var) //Bei int maximale Zahl pruefen
-		return false;
-	}
 	return $var;
 }
 function array_gen_form($name, $var, $data, $pm, $package, $class = 1){
@@ -27,7 +20,13 @@ function array_gen_form($name, $var, $data, $pm, $package, $class = 1){
 	$return .= "\n" . '   <td>';
 	$return .= "\n" . '    <p class="tab" id="arrayelements_'.$name.'">';
 	$return .= "\n" . '     <a href="javascript:addArrayElement(\'' . $name . '\', \'start\')">+</a>';
-	$return .= "\n" . '     <br /><input name="' . $name . '[0]" id="' . $name . '0" type="text" value="' . $var . '" /><a href="javascript:addArrayElement(\'' . $name . '\', 0)">+</a>';
+	if(is_array($var)) {
+		$i = 0;
+		foreach($var as $item){
+			$return .= "\n" . '     <br /><input name="' . $name . '[' . $i . ']" id="' . $name . $i . '" type="text" value="' . $item . '" /><a href="javascript:addArrayElement(\'' . $name . '\', '.$i.')">+</a><a href="javascript:removeArrayElement(\'' . $name . '\', '.$i.')">-</a>';
+			$i++;
+		}
+	}
 	$return .= "\n" . '    </p>';
 	$return .= "\n" . '   </td>';
 	$return .= "\n" . '  </tr>';
@@ -40,18 +39,75 @@ function array_gen_js($pm){
 	return '
 <script type="text/javascript">
  <!--
+ function countArray(name){
+  var i = 0;
+  oldelement = document.getElementById(name+i);
+  while(oldelement != undefined){
+   i++;
+   oldelement = document.getElementById(name+i);
+  }
+  return i-1;
+ }
  function addArrayElement(name, elementid){
   if(elementid != "start"){
-	  element = document.getElementById(name + elementid)
-	  if(element == undefined)
-	   return false;
+   element = document.getElementById(name + elementid);
+   if(element == undefined)
+   return false;
   }
   arraycontainer = document.getElementById("arrayelements_"+name);
   if(arraycontainer == undefined)
    return false;
   if(elementid == "start"){
+   var i = countArray(name)+1;
+   //Alte values setzen
+   var oldvalues = new Array();
+   for(var c = 0; c < i; c++){
+    element = document.getElementById(name+c);
+    oldvalues[c] = element.value;
+   }
    arraycontainer.innerHTML = arraycontainer.innerHTML.replace("<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a>", "");
-   arraycontainer.innerHTML = "<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a><br /><input name=\"\' +name+ \'[0]\" id=\"\' +name+ \'0\" type=\"text\" value=\"nope\" /><a href=\"javascript:addArrayElement(\'" + name + "\', 0)\">+</a>" + arraycontainer.innerHTML;
+   arraycontainer.innerHTML = "<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a><br /><input name=\"" +name+ "["+i+"]\" id=\"" +name+ i +"\" type=\"text\" value=\"nope\" /><a href=\"javascript:addArrayElement(\'" + name + "\', " + i + ")\">+</a><a href=\"javascript:removeArrayElement(\'" + name + "\', " + i + ")\">-</a>" + arraycontainer.innerHTML;
+   for(var c = 0; c < oldvalues.length; c++){
+    document.getElementById(name+c).value = oldvalues[c];
+   }
+  } else {
+   var i = countArray(name)+1;
+   //Save old values
+   var oldvalues = new Array();
+   for(var c = 0; c < i; c++){
+    element = document.getElementById(name+c);
+    oldvalues[c] = element.value;
+   }
+   //copy from the back of the line
+   var len = oldvalues.length;
+   for(var i = len -1; i >= elementid; i--){
+    oldvalues[i+1] = oldvalues[i];
+   }
+   oldvalues[elementid] = "";
+   //OK, now apply on Screen!
+   arraycontainer.innerHTML = "<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a>";
+   for(var i = oldvalues.length -1; i>=0; i--){
+    arraycontainer.innerHTML = arraycontainer.innerHTML + "<br /><input name=\"" +name+ "["+i+"]\" id=\"" +name+ i +"\" type=\"text\" value=\""+oldvalues[i]+"\" /><a href=\"javascript:addArrayElement(\'" + name + "\', " + i + ")\">+</a><a href=\"javascript:removeArrayElement(\'" + name + "\', " + i + ")\">-</a>";
+   }
+  }
+ }
+ function removeArrayElement(name, elementid){
+  var i = countArray(name)+1;
+  var oldvalues = new Array();
+  for(var c = 0; c < i; c++){
+   element = document.getElementById(name+c);
+   oldvalues[c] = element.value;
+  }
+  delete oldvalues[elementid];
+  //OK, now apply on Screen!
+  var arraycontainer = document.getElementById("arrayelements_"+name);
+  arraycontainer.innerHTML = "<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a>";
+  var i = oldvalues.length-1;
+  for(var c = oldvalues.length-1; c>=0; c--){
+   if(oldvalues[c] == undefined)
+    continue;
+   i--;
+   arraycontainer.innerHTML = arraycontainer.innerHTML + "<br /><input name=\"" +name+ "["+i+"]\" id=\"" +name+ i +"\" type=\"text\" value=\""+oldvalues[c]+"\" /><a href=\"javascript:addArrayElement(\'" + name + "\', " + i + ")\">+</a><a href=\"javascript:removeArrayElement(\'" + name + "\', " + i + ")\">-</a>";
   }
  }
  //-->
