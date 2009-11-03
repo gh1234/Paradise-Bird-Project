@@ -1,6 +1,6 @@
 ;<?php echo 'PDBP'; ?>
 header[dtype] = array
 header[extra][] = true
-bool[dtype] = bool
+nocache[dtype] = bool
 submit[dtype] = submit
 submit[extra] = true
