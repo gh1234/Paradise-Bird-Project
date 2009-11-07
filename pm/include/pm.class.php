@@ -262,6 +262,18 @@ class pm{
 		return $errorcode;
 	}
 	/**
+	 * Gibt ein Array mit allen Sprachkonstanten des Paketes zurück
+	 * @param $package
+	 * @return unknown_type
+	 */
+	public function list_pack_lang_const($package){
+		if(!isset($this->_errcodes[$package]))
+			$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
+		if(!isset($this->_errcodes[$package]))
+			return false;
+		return $this->_errcodes[$package];
+	}
+	/**
 	 * Installation eines Paketes
 	 * @param $packname string Paketname
 	 * @param $packfile string Datei (ZIP Format)

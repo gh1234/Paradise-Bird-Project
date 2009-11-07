@@ -13,5 +13,5 @@ if(isset($_GET['p']))
 if(isset($_GET['action']) && $_GET['action'] == 'save' && isset($_GET['package'])){
 	$return = $pm->save_form($_GET['package']);
 }
-//$pm->generate_cfg_form('header');
+$pm->generate_cfg_form('perm');
 echo $pm->get_debug_code();

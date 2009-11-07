@@ -2,6 +2,6 @@
 host = "localhost"
 dbtype = "mysql"
 user = "pdbp"
-password = "KYPwpwbwhM48ZEJ7"
+password = "pdbp"
 database = "pdbp"
 submit = "1"
