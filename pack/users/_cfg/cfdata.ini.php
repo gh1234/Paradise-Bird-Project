@@ -1,0 +1,9 @@
+;<?php die('PDBP'); ?>
+salt = "1"
+used = "1"
+usesalt = "1"
+static = "c3dcdd9f71f1569825e8981f6eb4f36997d596504af85ee13c1f6"
+usedyn = "1"
+signs = "{,-,=,e,_,$,%,&,(,)"
+dynlen = "13"
+submit = "1"

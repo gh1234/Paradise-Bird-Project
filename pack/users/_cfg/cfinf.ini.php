@@ -1,0 +1,13 @@
+;<?php die('PDBP'); ?>
+salt[dtype] = label
+used[dtype] = label
+used[extra][] = true
+usesalt[dtype] = bool
+static[dtype] = string
+usedyn[dtype] = bool
+signs[dtype] = string
+dynlen[dtype] = int
+dynlen[extra][] = '0'
+dynlen[extra][] = 20
+submit[dtype] = submit
+submit[extra] = true
