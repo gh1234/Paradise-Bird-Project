@@ -1,7 +1,7 @@
 <?php
 function password_check_intreg($var, $data){
 	if(!is_string($var))
-		return false;
+	return false;
 	if(isset($data['extra']) && is_int($data['extra'])){
 		if(strlen($var) > $data['extra']) //Bei string maximale Zeichenzahl pruefen
 		return false;

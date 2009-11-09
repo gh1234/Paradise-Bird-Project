@@ -15,7 +15,7 @@ if ($DBMS == 'mysql') {
 	$db = NewADOConnection('postgres');
 	$db->Connect("localhost","tester","test","test");
 } else
-	$db = NewADOConnection('oci8://scott:natsoft@/');
+$db = NewADOConnection('oci8://scott:natsoft@/');
 
 
 $arr = $db->ServerInfo();

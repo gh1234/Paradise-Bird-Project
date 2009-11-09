@@ -13,9 +13,9 @@ function float_check_intreg($var, $data){
 }
 function float_gen_form($name, $var, $data, $pm, $package, $class = 1){
 	if(!isset($data['extra'][0]))
-	 $data['extra'][0] = "'false'";
+	$data['extra'][0] = "'false'";
 	if(!isset($data['extra'][1]))
-	 $data['extra'][1] = "'false'";
+	$data['extra'][1] = "'false'";
 	$extra = ' onkeyup="checkfloat('. $data['extra'][0] .', ' . $data['extra'][1] . ', this)"';
 	$info = ' <i>('. $pm->parse_lang_const('FLOAT');
 	$info .= ($data['extra'][0])?' '. $pm->parse_lang_const('HIGHER') . ': ' . $data['extra'][0]:'';
@@ -37,7 +37,7 @@ function float_gen_form($name, $var, $data, $pm, $package, $class = 1){
 }
 function float_gen_js($pm){
 	if(defined('FLOAT_DEFINED_JS'))
-		return;
+	return;
 	define('FLOAT_DEFINED_JS', true);
 	return '
 <script type="text/javascript">

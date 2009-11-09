@@ -1,22 +1,22 @@
 <html>
 <body>
 <?php
-/* 
-V4.80 8 Mar 2006  (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reserved.
-  Released under both BSD license and Lesser GPL library license. 
-  Whenever there is any discrepancy between the two licenses, 
-  the BSD license will take precedence. 
-  Set tabs to 4 for best viewing.
-	
-  Latest version is available at http://adodb.sourceforge.net
-*/
+/*
+ V4.80 8 Mar 2006  (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reserved.
+ Released under both BSD license and Lesser GPL library license.
+ Whenever there is any discrepancy between the two licenses,
+ the BSD license will take precedence.
+ Set tabs to 4 for best viewing.
+
+ Latest version is available at http://adodb.sourceforge.net
+ */
 error_reporting(E_ALL | E_STRICT);
 include("../adodb.inc.php");
 include("../tohtml.inc.php");
 
 if (0) {
 	$db = ADONewConnection('oci8po');
-	
+
 	$db->PConnect('','scott','natsoft');
 	if (!empty($testblob)) {
 		$varHoldingBlob = 'ABC DEF GEF John TEST';
@@ -24,16 +24,16 @@ if (0) {
 		// create table atable (id integer, ablob blob);
 		$db->Execute('insert into ATABLE (id,ablob) values('.$num.',empty_blob())');
 		$db->UpdateBlob('ATABLE', 'ablob', $varHoldingBlob, 'id='.$num, 'BLOB');
-		
+
 		$rs = $db->Execute('select * from atable');
-		
+
 		if (!$rs) die("Empty RS");
 		if ($rs->EOF) die("EOF RS");
 		rs2html($rs);
 	}
 	$stmt = $db->Prepare('select * from adoxyz where id=?');
 	for ($i = 1; $i <= 10; $i++) {
-	$rs = $db->Execute(
+		$rs = $db->Execute(
 		$stmt,
 		array($i));
 			
@@ -53,9 +53,9 @@ if (1) {
 	// prepare not quite ready for prime time
 	//$rs = $db->Execute($stmt,array('empno'=>3775,'ename'=>'John'));
 	if (!$rs) die("Empty RS");
-	
+
 	$db->setfetchmode(ADODB_FETCH_NUM);
-	
+
 	$vv = 'A%';
 	$stmt = $db->PrepareSP("BEGIN adodb.open_tab2(:rs,:tt); END;",true);
 	$db->OutParameter($stmt, $cur, 'rs', -1, OCI_B_CURSOR);
@@ -75,7 +75,7 @@ if (0) {
 	$db->debug = true;
 	$rs = $db->Execute(
 		'select * from adoxyz where firstname=? and trim(lastname)=?',
-		array('first'=>'Caroline','last'=>'Miranda'));
+	array('first'=>'Caroline','last'=>'Miranda'));
 	if (!$rs) die("Empty RS");
 	if ($rs->EOF) die("EOF RS");
 	rs2html($rs);

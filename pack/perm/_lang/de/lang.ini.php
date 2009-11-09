@@ -1,9 +1,11 @@
 ;<?php die('PDBP'); ?>
 MAINTENANCE = "Zur Zeit finden Wartungsarbeiten statt, bitte haben sie einen Moment Gedult."
 TITLE = "Wartungsarbeiten"
+TITLE_P = "Zugriff nicht erlaubt"
 LAB_maintenance_message = "Text Für die Wartungsarbeit"
 LAB_maintenance = "Wartungsmodus aktivieren"
 LAB_submit = "Anwenden"
 LAB_usual = "Standartaktion, falls keine andere für das Pakte eingestellt"
 SEL_DENIE = "Verbieten (empfohlen)"
-SEL_ALLOW = "Verbieten (nicht empfohlen, für Entwickler)"
+SEL_ALLOW = "Erlauben (nicht empfohlen, nur für Entwickler)"
+PERMISSION = "Zugriff nicht erlaubt"

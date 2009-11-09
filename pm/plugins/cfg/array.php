@@ -1,14 +1,14 @@
 <?php
 function array_check_intreg($var, $data){
 	if(!is_array($var))
-		return false;
+	return false;
 	return $var;
 }
 function array_gen_form($name, $var, $data, $pm, $package, $class = 1){
 	if(!isset($data['extra'][0]))
-	 $data['extra'][0] = "'false'";
+	$data['extra'][0] = "'false'";
 	else if($data['extra'][0] != false)
-		$data['extra'][0] = "'true'";
+	$data['extra'][0] = "'true'";
 	$info = ' <i>('. $pm->parse_lang_const('ARRAY');
 	$info .=')</i>';
 	$return  = "\n" . '  <tr class="c' . $class . '">';
@@ -34,7 +34,7 @@ function array_gen_form($name, $var, $data, $pm, $package, $class = 1){
 }
 function array_gen_js($pm){
 	if(defined('ARRAY_DEFINED_JS'))
-		return;
+	return;
 	define('ARRAY_DEFINED_JS', true);
 	return '
 <script type="text/javascript">

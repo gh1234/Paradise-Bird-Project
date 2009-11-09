@@ -3,7 +3,7 @@ function bool_check_intreg($var, $data){
 	if($var != 1 && $var != 0)
 	return false;
 	if($var)
-		return true;
+	return true;
 	return false;
 }
 function bool_gen_form($name, $var, $data, $pm, $package, $class = 1){

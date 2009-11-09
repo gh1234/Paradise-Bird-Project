@@ -5,27 +5,32 @@
 <title><?php echo $this->parse_lang_const('CFG_EDIT') . $packname; ?></title>
 <style type="text/css">
 <!--
-table.cfgform{
- width: 100%;
+table.cfgform {
+	width: 100%;
 }
-p.tab{
- height: auto;
+
+p.tab {
+	height: auto;
 }
-tr.c1{
- background-color: #CCCCCC;
+
+tr.c1 {
+	background-color: #CCCCCC;
 }
-tr.c2{
- background-color: #A0C0C0;
+
+tr.c2 {
+	background-color: #A0C0C0;
 }
-input{
- background: transparent;
+
+input {
+	background: transparent;
 }
-select{
- background: transparent;
+
+select {
+	background: transparent;
 }
 -->
 </style>
-<?php 
+<?php
 echo $js;
 ?>
 </head>

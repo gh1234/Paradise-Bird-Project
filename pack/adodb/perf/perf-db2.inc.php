@@ -1,16 +1,16 @@
 <?php
-/* 
-V5.09 25 June 2009   (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reserved.
-  Released under both BSD license and Lesser GPL library license. 
-  Whenever there is any discrepancy between the two licenses, 
-  the BSD license will take precedence. See License.txt. 
-  Set tabs to 4 for best viewing.
-  
-  Latest version is available at http://adodb.sourceforge.net
-  
-  Library for basic performance monitoring and tuning 
-  
-*/
+/*
+ V5.09 25 June 2009   (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reserved.
+ Released under both BSD license and Lesser GPL library license.
+ Whenever there is any discrepancy between the two licenses,
+ the BSD license will take precedence. See License.txt.
+ Set tabs to 4 for best viewing.
+
+ Latest version is available at http://adodb.sourceforge.net
+
+ Library for basic performance monitoring and tuning
+
+ */
 
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
@@ -27,7 +27,7 @@ class perf_db2 extends adodb_perf{
 		  tracer varchar(500) NOT NULL,
 		  timer decimal(16,6) NOT NULL
 		)";
-		
+
 	var $settings = array(
 	'Ratios',
 		'data cache hit ratio' => array('RATIO',
@@ -36,7 +36,7 @@ class perf_db2 extends adodb_perf{
 				else 100*(1-sum(POOL_DATA_P_READS+POOL_INDEX_P_READS)/sum(POOL_DATA_L_READS+POOL_INDEX_L_READS)) end 
 				FROM TABLE(SNAPSHOT_APPL('',-2)) as t",
 			'=WarnCacheRatio'),
-			
+		
 	'Data Cache',
 		'data cache buffers' => array('DATAC',
 		'select sum(npages) from SYSCAT.BUFFERPOOLS',
@@ -52,7 +52,7 @@ class perf_db2 extends adodb_perf{
 			"SELECT count(*) FROM TABLE(SNAPSHOT_APPL_INFO('',-2)) as t",
 			''),
 
-		false
+	false
 	);
 
 
@@ -60,7 +60,7 @@ class perf_db2 extends adodb_perf{
 	{
 		$this->conn = $conn;
 	}
-	
+
 	function Explain($sql,$partial=false)
 	{
 		$save = $this->conn->LogSQL(false);
@@ -85,12 +85,12 @@ class perf_db2 extends adodb_perf{
 		$s = ob_get_contents();
 		ob_end_clean();
 		$this->conn->LogSQL($save);
-		
+
 		$s .= $this->Tracer($sql);
 		return $s;
 	}
-	
-	
+
+
 	function Tables()
 	{
 		$rs = $this->conn->Execute("select tabschema,tabname,card as rows,

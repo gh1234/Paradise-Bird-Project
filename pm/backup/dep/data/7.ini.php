@@ -1,3 +1,3 @@
-;<?php die('PDBP'); ?>
-time = "1257189737"
-comment = "Backup"
+;
+<?php die('PDBP'); ?>
+time = "1257189737" comment = "Backup"

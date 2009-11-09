@@ -1,4 +1,3 @@
-;<?php die('PDBP'); ?>
-time = "1257189717"
-comment = "Backup"
-edited[] = "index.php"
+;
+<?php die('PDBP'); ?>
+time = "1257189717" comment = "Backup" edited[] = "index.php"

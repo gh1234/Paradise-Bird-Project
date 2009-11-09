@@ -23,7 +23,7 @@ function select_gen_form($name, $var, $data, $pm, $package, $class = 1){
 			$extra = '';
 			$value = explode('|', $value);
 			if($value[0] == $var)
-				$extra = ' selected="selected"';
+			$extra = ' selected="selected"';
 			$outputval = $pm->parse_pack_lang_const('SEL_' . $value[1], $package) != 'n/a'?$pm->parse_pack_lang_const('SEL_' . $value[1], $package):$value[1];
 			$return .= "\n" . '     <option value="'.$value[0].'"'.$extra.'>' . $outputval . '</option>';
 		}

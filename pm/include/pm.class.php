@@ -254,11 +254,11 @@ class pm{
 	}
 	public function parse_pack_lang_const($code, $package){
 		if(!isset($this->_errcodes[$package]))
-			$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
+		$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
 		if(!isset($this->_errcodes[$package][$code]))
-			$errorcode = "n/a";
+		$errorcode = "n/a";
 		else
-			$errorcode = $this->_errcodes[$package][$code];
+		$errorcode = $this->_errcodes[$package][$code];
 		return $errorcode;
 	}
 	/**
@@ -268,9 +268,9 @@ class pm{
 	 */
 	public function list_pack_lang_const($package){
 		if(!isset($this->_errcodes[$package]))
-			$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
+		$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
 		if(!isset($this->_errcodes[$package]))
-			return false;
+		return false;
 		return $this->_errcodes[$package];
 	}
 	/**
@@ -749,7 +749,7 @@ class pm{
 				continue;
 				if(!file_exists(ROOTPATH . 'pack/' . $packname . '/' . $hash[1]))
 				continue;
-				if(md5(file_get_contents(ROOTPATH . 'pack/' . $packname . '/' . $hash[1])) != $hash[2])
+				if(md5_file(ROOTPATH . 'pack/' . $packname . '/' . $hash[1]) != $hash[2])
 				return false;
 			}
 		}
@@ -845,7 +845,7 @@ class pm{
 			if(!isset($md5fs[$filename])){
 				$return[] = $filename;
 				return $return;
-			} else if($md5fs[$filename] != md5(file_get_contents($filename))){
+			} else if($md5fs[$filename] != md5_file($filename)){
 				$return[] = $filename;
 				return $return;
 			} else
@@ -889,7 +889,7 @@ class pm{
 				$mergewith[$file_merge['filename']] = 'dir';
 				continue;
 			}
-			$hash = md5(file_get_contents($file_merge['filename']));
+			$hash = md5_file($file_merge['filename']);
 			if(isset($mergewith[$file_merge['filename']]) && $mergewith[$file_merge['filename']] == $hash)
 			continue;
 			$mergewith[$file_merge['filename']] = $hash;
@@ -967,7 +967,7 @@ class pm{
 			$filename = preg_replace("!^\.\/!", '', $filename);
 			if(preg_match("!^pm\/backup!", $filename))
 			return $return;
-			$return[$filename] = md5(file_get_contents($filename));
+			$return[$filename] = md5_file($filename);
 			return $return;
 		}
 		return $return;
@@ -1077,16 +1077,16 @@ class pm{
 		if(!isset($data['dtype']))
 		return false;
 		if(!file_exists(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php'))
-			return false;
+		return false;
 		include_once(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php');
 		if(!function_exists($data['dtype'] . '_check_intreg'))
-			return false;
+		return false;
 		$funcname = $data['dtype'] . '_check_intreg';
 		return $funcname($var, $data);
 	}
 	public function generate_cfg_form($package){
 		if(!$this->_is_installed($package))
-			return false;
+		return false;
 		$packname = $this->_installed[$package]['real_name'];
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
@@ -1099,12 +1099,12 @@ class pm{
 			if($class >= 3)
 			$class = 1;
 			if(!isset($data['dtype']))
-				continue;
+			continue;
 			if(!file_exists(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php'))
-				continue;
+			continue;
 			include_once(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php');
 			if(!function_exists($data['dtype'] . '_gen_form'))
-				continue;
+			continue;
 			$funcname = $data['dtype'] . '_gen_form';
 			$form .= ($add = $funcname($name, $cfdata[$name], $data, $this, $package, $class))?$add:'';
 			if(function_exists($data['dtype'] . '_gen_js')){
@@ -1120,12 +1120,15 @@ class pm{
 	}
 	public function save_form($package){
 		if(!isset($_POST['pdbpforms']))
-			return false;
+		return false;
+		return $this->save_data_ini($package, $_POST);
+	}
+	public function save_data_ini($package, $data_arr){
 		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$save = array();
 		foreach($cfinf as $data => $info){
-			if(isset($_POST[$data])){
-				$save[$data] = $this->_check_intreg_config($_POST[$data], $info);
+			if(isset($data_arr[$data])){
+				$save[$data] = $this->_check_intreg_config($data_arr[$data], $info);
 			}
 		}
 		if(in_array(false, $save))

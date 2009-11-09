@@ -1,13 +1,13 @@
 <?php
-/* 
-V4.80 8 Mar 2006  (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reserved.
-  Released under both BSD license and Lesser GPL library license. 
-  Whenever there is any discrepancy between the two licenses, 
-  the BSD license will take precedence. 
-  Set tabs to 4 for best viewing.
-	
-  Latest version is available at http://adodb.sourceforge.net
-*/
+/*
+ V4.80 8 Mar 2006  (c) 2000-2009 John Lim (jlim#natsoft.com). All rights reserved.
+ Released under both BSD license and Lesser GPL library license.
+ Whenever there is any discrepancy between the two licenses,
+ the BSD license will take precedence.
+ Set tabs to 4 for best viewing.
+
+ Latest version is available at http://adodb.sourceforge.net
+ */
 
 error_reporting(E_ALL);
 
@@ -43,8 +43,8 @@ if ($driver == 'mssql') {
 if ($driver == 'oci8') {
 	$db = NewADOConnection('oci8');
 	$db->Connect('','scott','natsoft');
-	
-$sql = "select * from (select  ID, firstname as \"First Name\", lastname as \"Last Name\" from adoxyz 
+
+	$sql = "select * from (select  ID, firstname as \"First Name\", lastname as \"Last Name\" from adoxyz
 	 order  by  1)";
 }
 
@@ -63,19 +63,19 @@ if (empty($driver) or $driver == 'mysql') {
 $db->debug = true;
 
 if (0) {
-$rs = $db->Execute($sql);
-include_once('../toexport.inc.php');
-print "<pre>";
-print rs2csv($rs); # return a string
+	$rs = $db->Execute($sql);
+	include_once('../toexport.inc.php');
+	print "<pre>";
+	print rs2csv($rs); # return a string
 
-print '<hr />';
-$rs->MoveFirst(); # note, some databases do not support MoveFirst
-print rs2tab($rs); # return a string
+	print '<hr />';
+	$rs->MoveFirst(); # note, some databases do not support MoveFirst
+	print rs2tab($rs); # return a string
 
-print '<hr />';
-$rs->MoveFirst();
-rs2tabout($rs); # send to stdout directly
-print "</pre>";
+	print '<hr />';
+	$rs->MoveFirst();
+	rs2tabout($rs); # send to stdout directly
+	print "</pre>";
 }
 
 $pager = new ADODB_Pager($db,$sql);
