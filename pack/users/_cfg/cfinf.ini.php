@@ -9,5 +9,6 @@ signs[dtype] = string
 dynlen[dtype] = int
 dynlen[extra][] = '0'
 dynlen[extra][] = 20
+restricted[dtype] = array
 submit[dtype] = submit
 submit[extra] = true

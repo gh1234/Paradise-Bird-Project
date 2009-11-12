@@ -22,7 +22,6 @@ class perm{
 		//Berechtigungen laden
 		$perm = $db->query("SELECT `level`, `pack` FROM `perm` WHERE `pack` = '" . $db->escape($packname) . "'");
 		$perm = $perm->FetchRow();
-		var_dump($perm);
 		//Falls nicht anderes verfügbar usual verwenden
 		switch($usual){
 			case 'denie':
