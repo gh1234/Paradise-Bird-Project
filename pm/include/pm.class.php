@@ -1,4 +1,20 @@
 <?php
+/*
+ * This file is part of Paradise-Bird-Project.
+
+ * Paradise-Bird-Project is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * Paradise-Bird-Project is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /**
  * Paketmanager des Paradise Bird Project
  * @author: Jonas Schwabe
@@ -1090,7 +1106,7 @@ class pm{
 		$packname = $this->_installed[$package]['real_name'];
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
-		$form = '<form method="post" action="?action=save&package=' .$package . '">' . "\n" . '<table class="cfgform">';
+		$form = '<form method="post" action="?action=save&amp;package=' .$package . '">' . "\n" . '<table class="cfgform">';
 		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$cfdata = $this->_parse_config($package);
 		$class = 1;
