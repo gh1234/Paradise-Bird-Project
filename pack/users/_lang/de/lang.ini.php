@@ -5,3 +5,6 @@ LAB_static = "Statischer Salt, bitte geheim halten und nicht nach benutzung änd
 LAB_signs = "Dynamischer Salt, jederzeit änderbar. Hier werden Zeichen die zum salten des Strings verwendet werden, durch Komma getrennt aufgelistet."
 LAB_submit = "Aktualisieren"
 LAB_dynlen = "Länge des dynamischen Keys"
+LAB_usesalt = "Salts zur Sicherheitsverbesserung verwenden?"
+LAB_usedyn = "Dynamischen Salt zur Sicherheitsverbesserung verwenden?"
+LAB_restricted = "Verbotene Usernamen, Achtung! das entfernen von Standartwerten kann zu Fehlern führen."
