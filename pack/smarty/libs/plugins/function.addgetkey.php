@@ -15,20 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
  */
-global $pm;
-include("users_class.php");
-include("users_functions.php");
-$user = new users($config);
-if(isset($_GET['users_action']))
-	$action = $_GET['users_action'];
-else
-	$action = 'main';
-switch($action){
-	case 'main':
-		showTemplate('login', 'users');
-		break;
-	default:
-		$pm->show_error('UNKNOWN_ACTION');
-		exit;
-		break;
+function smarty_function_addgetkey($params, &$smarty){
+	$currentURL = preg_replace("!^.*/(.*?)!", "$1", $_SERVER['REQUEST_URI']);
+	if(!isset($params['key']) || !isset($params['value']))
+		return $currentURL;
+	if(isset($params['url']))
+		$currentURL = $params['url'];
+	if(preg_match("!\?.*$!", $currentURL)){
+		$currentURL .= '&' . $params['key'] . '=' . $params['value'];
+	} else {
+		$currentURL .= '?' . $params['key'] . '=' . $params['value'];
+	}
+	return htmlspecialchars($currentURL);
 }

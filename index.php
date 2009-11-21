@@ -29,5 +29,5 @@ $pm->show_error('404', 404);
 if(isset($_GET['action']) && $_GET['action'] == 'save' && isset($_GET['package'])){
 	$return = $pm->save_form($_GET['package']);
 }
-$pm->generate_cfg_form('users');
+//$pm->generate_cfg_form('users');
 //echo $pm->get_debug_code();

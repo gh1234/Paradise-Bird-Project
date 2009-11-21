@@ -14,7 +14,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<?php global $perm; $perm->checkperm('hello_world'); ?>
 <html>
 <body>
 <h1>Hallo Welt!</h1>

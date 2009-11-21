@@ -10,5 +10,6 @@ dynlen[dtype] = int
 dynlen[extra][] = '0'
 dynlen[extra][] = 20
 restricted[dtype] = array
+defaultlang[dtype] = string
 submit[dtype] = submit
 submit[extra] = true

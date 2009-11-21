@@ -72,11 +72,9 @@ function genSalt($tosalt){
 	if(!isset($saltCfg['used']) || $saltCfg['used'] != true){
 		$saltCfg['used'] = 'true';
 		$pm->save_data_ini('users', $saltCfg);
-		//TODO Debug Funktion einbauen
 	}
 	if(!$configuredSalt){
 		configureSalt();
-		//TODO Debug Funktion einbauen
 	}
 	//So, jetzt salzen wir :)
 	$salt = $tosalt;
@@ -94,11 +92,9 @@ function genSaltPublicKey($tosalt, $publicKey){
 	if(!isset($saltCfg['used']) || $saltCfg['used'] != true){
 		$saltCfg['used'] = 'true';
 		$pm->save_data_ini('users', $saltCfg);
-		//TODO Debug Funktion einbauen
 	}
 	if(!$configuredSalt){
 		configureSalt();
-		//TODO Debug Funktion einbauen
 	}
 	$salt = $tosalt;
 	$salt .= $staticSalt;
