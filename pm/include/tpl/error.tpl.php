@@ -108,12 +108,25 @@ h1 {
 }
 -->
 </style>
-
+<?php if(isset($referBack) && $referBack && isset($_SERVER['HTTP_REFERER']) || isset($referUrl) && $referUrl){ ?>
+<script type="text/javascript">
+<!--
+function refer(ref){
+	location.href = ref;
+}
+window.setTimeout("refer('<?php if(isset($referUrl) && $referUrl) echo $referUrl; else echo $_SERVER['HTTP_REFERER']; ?>')", 4000);
+//-->
+</script>
+<?php } ?>
 </head>
 
 <body>
 <div id="error">
 <div id="warning"></div>
-<?php echo $errorcode; ?></div>
+<?php echo $errorcode; ?>
+<?php if(isset($referBack) && $referBack && isset($_SERVER['HTTP_REFERER']) || isset($referUrl) && $referUrl){ ?>
+<p>Sie werden automatisch weitergeleitet, wenn dies nicht geschehen sollte, klicken sie <a href="<?php if(isset($referUrl) && $referUrl) echo $referUrl; else echo $_SERVER['HTTP_REFERER']; ?>">hier</a></p>
+<?php } ?>
+</div>
 </body>
 </html>

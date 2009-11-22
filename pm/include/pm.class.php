@@ -152,6 +152,7 @@ class pm{
 		return false;
 		$modpath = 'pack/' . $packname . '/';
 		$config = $this->_parse_config($packname);
+		$pm = $this;
 		require(ROOTPATH.'pack/' . $packname . '/_init.php');
 		$this->_loaded[] = $packname;
 		return true;
@@ -250,7 +251,7 @@ class pm{
 		include(ROOTPATH.'pm/include/tpl/error.tpl.php');
 		exit();
 	}
-	public function show_pack_error($errorcode, $package, $http = 200){
+	public function show_pack_error($errorcode, $package, $http = 200, $referBack = false, $referUrl = false){
 		header('HTTP/ '.$http);
 		$errorcode = $this->parse_pack_lang_const($errorcode, $package);
 		include(ROOTPATH.'pm/include/tpl/error.tpl.php');
@@ -534,7 +535,7 @@ class pm{
 			}
 		}
 
-		if (!$handle = fopen($path, 'w')) {
+		if (!$handle = @fopen($path, 'w')) {
 			return false;
 		}
 		if (!fwrite($handle, $content)) {

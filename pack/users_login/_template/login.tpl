@@ -19,7 +19,7 @@ along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>{$L_login}</title>
-{literal}
+<!--{literal}-->
 <style type="text/css">
 <!--
 body {
@@ -49,7 +49,7 @@ h1 {
 	width:856px;
 	height:208px;
 	z-index:2;
-	background-image: url(pack/users/_template/header.png);
+	background-image: url(pack/users_login/_template/header.png);
 	background-repeat: no-repeat;
 	margin-left: 2px;
 	border:1px solid black;
@@ -99,7 +99,7 @@ fieldset{
 }
 -->
 </style>
-{/literal}
+<!--{/literal}-->
 </head>
 
 <body>
@@ -107,7 +107,7 @@ fieldset{
  <div id="header"> <h1>{$L_login}</h1></div>
   <form action="{addgetkey key='users_action' value='login'}" method="post">
   <fieldset>
-   <p><table width="100%"><tr><td><label>{$L_username}: </label><input type="text" id="users_username" name="users_username" tabindex="1" /></td><td><label>{$L_password}: </label><input type="password" name="users_password" tabindex="2" /></td><td><input type="submit" name="users_login" value="{$L_login}" /></td></tr></table></p>
+   <table width="100%"><tr><td><label>{$L_username}: </label><input type="text" id="users_username" name="users_username" tabindex="1" /></td><td><label>{$L_password}: </label><input type="password" name="users_password" tabindex="2" /></td><td><input type="submit" name="users_login" value="{$L_login}" /></td></tr></table>
   </fieldset>
   </form>
 </div>

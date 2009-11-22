@@ -15,18 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
  */
-error_reporting(E_ALL);
-require_once("pm/include/pm.class.php");
-global $pm;
-$pm = new pm();
-if(isset($_GET['p'])){
-	if(!$pm->open_index($_GET['p']))
-		$pm->show_error('404', 404);
-} else {
-	if(!$pm->open_index('index'))
-		$pm->show_error('404', 404);
+if(!isset($config['index']))
+	$pm->show_error('404', 404);
+if(isset($config['param']) && is_array($config['param'])){
+	foreach($config['param'] as $param){
+		$param = explode('=', $param, 2);
+		if(!isset($param[1]))
+			$param[1] = '';
+		$_GET[$param[0]] = $param[1];
+	}
 }
-//if(isset($_GET['action']) && $_GET['action'] == 'save' && isset($_GET['package'])){
-//	$return = $pm->save_form($_GET['package']);
-//}
-//echo $pm->generate_cfg_form('index');
+if(!$pm->open_index($config['index']))
+	$pm->show_error('404', 404);

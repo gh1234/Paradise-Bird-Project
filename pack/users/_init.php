@@ -15,20 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
  */
-global $pm;
 include("users_class.php");
 include("users_functions.php");
+global $user;
 $user = new users($config);
 if(isset($_GET['users_action']))
 	$action = $_GET['users_action'];
 else
 	$action = 'main';
 switch($action){
-	case 'main':
-		showTemplate('login', 'users');
+	case 'login':
+		$result = $user->login($_POST['users_username'], $_POST['users_password']);
+		if($result < 1){
+			$pm->show_pack_error('login_incorrect', 'users', 403, true);
+			exit;
+		}
+		if($result == true){
+			$pm->show_pack_error('login_done', 'users', 200, true, 'index.php');
+			exit;
+		}
 		break;
 	default:
-		$pm->show_error('UNKNOWN_ACTION');
-		exit;
 		break;
 }

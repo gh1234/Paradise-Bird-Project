@@ -53,7 +53,7 @@ class users{
 	 * @param string $username
 	 * @param string $password
 	 * @param bool $allowRestricted
-	 * @return bool, int on failure
+	 * @return bool, int on failure -1: username does not exist, -2 password is wrong
 	 */
 	public function login($username, $password, $allowRestricted = false){
 		global $db;
@@ -81,7 +81,9 @@ class users{
 	 * @return bool
 	 */
 	public function logout(){
+		if(isset($_SESSION['user']))
 		unset($_SESSION['user']);
+		$this->loginGuest();
 		return true;
 	}
 	/**
@@ -129,6 +131,7 @@ class users{
 		if($language == 'default'){
 			$language = $this->_config['defaultlang'];
 		}
+		if($this->isLoggedIn())
 		$this->logout();
 		return $this->login('guest', 'guest', true);
 	}
@@ -146,6 +149,12 @@ class users{
 		$user = $user->FetchRow();
 		if(isset($user[0]))
 			return $user[0]*1;
+		return false;
+	}
+	public function isLoggedIn(){
+		if(isset($this->_userInformation['username']) && $this->_userInformation['username'] != 'guest'){
+			return true;
+		}
 		return false;
 	}
 }
