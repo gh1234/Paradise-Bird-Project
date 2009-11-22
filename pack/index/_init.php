@@ -16,7 +16,7 @@
  * along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
  */
 if(!isset($config['index']))
-	$pm->show_error('404', 404);
+	$pm->showError('404', 404);
 if(isset($config['param']) && is_array($config['param'])){
 	foreach($config['param'] as $param){
 		$param = explode('=', $param, 2);
@@ -25,5 +25,5 @@ if(isset($config['param']) && is_array($config['param'])){
 		$_GET[$param[0]] = $param[1];
 	}
 }
-if(!$pm->open_index($config['index']))
-	$pm->show_error('404', 404);
+if(!$pm->openIndex($config['index']))
+	$pm->showError('404', 404);

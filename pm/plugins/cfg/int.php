@@ -33,14 +33,14 @@ function int_gen_form($name, $var, $data, $pm, $package, $class = 1){
 	if(!isset($data['extra'][1]))
 	$data['extra'][1] = "'false'";
 	$extra = ' onkeyup="checkint('. $data['extra'][0] .', ' . $data['extra'][1] . ', this)"';
-	$info = ' <i>('. $pm->parse_lang_const('INT');
-	$info .= ($data['extra'][0])?' '. $pm->parse_lang_const('HIGHER') . ': ' . $data['extra'][0]:'';
-	$info .= ($data['extra'][1])?' '. $pm->parse_lang_const('LOWER') . ': ' . $data['extra'][1]:'';
+	$info = ' <i>('. $pm->parseLangConst('INT');
+	$info .= ($data['extra'][0])?' '. $pm->parseLangConst('HIGHER') . ': ' . $data['extra'][0]:'';
+	$info .= ($data['extra'][1])?' '. $pm->parseLangConst('LOWER') . ': ' . $data['extra'][1]:'';
 	$info .=')</i>';
 	$return  = "\n" . '  <tr class="c' . $class . '">';
 	$return .= "\n" . '   <td>';
 	$return .= "\n" . '    <p class="tab">';
-	$return .= "\n" . '     <label>' . $pm->parse_pack_lang_const('LAB_' . $name, $package) . $info . ': </label>';
+	$return .= "\n" . '     <label>' . $pm->parsePackLangConst('LAB_' . $name, $package) . $info . ': </label>';
 	$return .= "\n" . '    </p>';
 	$return .= "\n" . '   </td>';
 	$return .= "\n" . '   <td>';

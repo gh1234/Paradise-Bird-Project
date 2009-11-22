@@ -57,7 +57,7 @@ function configureSalt(){
 	$saltCfg['static'] = $staticSalt;
 	$saltCfg['signs'] = implode(',', $dynamicSalt);
 	$saltCfg['dynlen'] = 13;
-	$pm->save_data_ini('users', $saltCfg);
+	$pm->saveDataIni('users', $saltCfg);
 }
 /**
  * Diese Funktion erstellt einen sh1 salt
@@ -71,7 +71,7 @@ function genSalt($tosalt){
 	return sha1($tosalt);
 	if(!isset($saltCfg['used']) || $saltCfg['used'] != true){
 		$saltCfg['used'] = 'true';
-		$pm->save_data_ini('users', $saltCfg);
+		$pm->saveDataIni('users', $saltCfg);
 	}
 	if(!$configuredSalt){
 		configureSalt();
@@ -91,7 +91,7 @@ function genSaltPublicKey($tosalt, $publicKey){
 	return sha1($tosalt);
 	if(!isset($saltCfg['used']) || $saltCfg['used'] != true){
 		$saltCfg['used'] = 'true';
-		$pm->save_data_ini('users', $saltCfg);
+		$pm->saveDataIni('users', $saltCfg);
 	}
 	if(!$configuredSalt){
 		configureSalt();

@@ -25,12 +25,12 @@ function array_gen_form($name, $var, $data, $pm, $package, $class = 1){
 	$data['extra'][0] = "'false'";
 	else if($data['extra'][0] != false)
 	$data['extra'][0] = "'true'";
-	$info = ' <i>('. $pm->parse_lang_const('ARRAY');
+	$info = ' <i>('. $pm->parseLangConst('ARRAY');
 	$info .=')</i>';
 	$return  = "\n" . '  <tr class="c' . $class . '">';
 	$return .= "\n" . '   <td>';
 	$return .= "\n" . '    <p class="tab">';
-	$return .= "\n" . '     <label>' . $pm->parse_pack_lang_const('LAB_' . $name, $package) . $info . ': </label>';
+	$return .= "\n" . '     <label>' . $pm->parsePackLangConst('LAB_' . $name, $package) . $info . ': </label>';
 	$return .= "\n" . '    </p>';
 	$return .= "\n" . '   </td>';
 	$return .= "\n" . '   <td>';

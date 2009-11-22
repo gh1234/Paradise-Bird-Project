@@ -1,4 +1,3 @@
 ;<?php die('PDBP'); ?>
-index = "hello_world"
-param[] = "text=hello"
+index = "pdbp_settings"
 submit = "1"

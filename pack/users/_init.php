@@ -27,11 +27,11 @@ switch($action){
 	case 'login':
 		$result = $user->login($_POST['users_username'], $_POST['users_password']);
 		if($result < 1){
-			$pm->show_pack_error('login_incorrect', 'users', 403, true);
+			$pm->showPackError('login_incorrect', 'users', 403, true);
 			exit;
 		}
 		if($result == true){
-			$pm->show_pack_error('login_done', 'users', 200, true, 'index.php');
+			$pm->showPackError('login_done', 'users', 200, true, 'index.php');
 			exit;
 		}
 		break;

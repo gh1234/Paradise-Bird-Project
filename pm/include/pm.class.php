@@ -53,37 +53,42 @@ class pm{
 	 * Ordner und Dateien für komplettes Backup
 	 * @var array
 	 */
-	private $_full_backup_files = array();
+	private $_fullBackupFiles = array();
 	/**
 	 * Backup Methode true->volles Backup false->Abhaengiges Backup
 	 * @var bool
 	 */
-	private $_backup_type = false;
+	private $_backupType = false;
+	/**
+	 * Sourcecode of template
+	 * @var string
+	 */
+	private $_tplSource = '';
 	//Funktionen
 	/**
 	 * Konstruktor laed KOnfigurationen
 	 * @return bool
 	 */
 	public function pm(){
-		if(!$this->_errcodes = $this->_load_lang_file(ROOTPATH."pm/lang/de/error.ini.php"))
+		if(!$this->_errcodes = $this->_loadLangFile(ROOTPATH."pm/lang/de/error.ini.php"))
 		die('Errorfile cannot be loaded.');
 		if(count(parse_ini_file(ROOTPATH."pm/config/installed.ini.php")) != 0){
-			if(!$this->_installed = $this->_load_pack_list(ROOTPATH."pm/config/installed.ini.php")){
-				$this->show_error('PACKLIST_WRONG');
+			if(!$this->_installed = $this->_loadPackList(ROOTPATH."pm/config/installed.ini.php")){
+				$this->showError('PACKLIST_WRONG');
 				return false;
 			}
-			if(!$this->_load_packages($this->_installed)){
-				$this->show_error('PACKLIST_WRONG');
+			if(!$this->_loadPackages($this->_installed)){
+				$this->showError('PACKLIST_WRONG');
 				return false;
 			}
 		}
 		$backup = parse_ini_file(ROOTPATH . 'pm/config/backup.ini.php', false);
 		foreach($backup['file'] as $file){
 			if(!file_exists(ROOTPATH . $file)){
-				$this->_errcodes .= "\n<p>" . $this->parse_lang_const('BACKUP_FILE_NOT_EXISTS') . $file . "</p>";
+				$this->_errcodes .= "\n<p>" . $this->parseLangConst('BACKUP_FILE_NOT_EXISTS') . $file . "</p>";
 				return false;
 			}
-			$this->_full_backup_files[] = ROOTPATH . $file;
+			$this->_fullBackupFiles[] = ROOTPATH . $file;
 		}
 	}
 	/**
@@ -91,7 +96,7 @@ class pm{
 	 * @param $cfgfile Listendatei
 	 * @return bool/array
 	 */
-	private function _load_pack_list($cfgfile){
+	private function _loadPackList($cfgfile){
 		if(!file_exists($cfgfile))
 		return false;
 		if(!$installed = parse_ini_file($cfgfile, true))
@@ -108,7 +113,7 @@ class pm{
 	 * @param $packlist array
 	 * @return bool
 	 */
-	private function _load_packages($packlist){
+	private function _loadPackages($packlist){
 		if(!is_array($packlist))
 		return false;
 		foreach($packlist as $id => $cfg){ //Liste durcharbeiten...
@@ -116,7 +121,7 @@ class pm{
 			continue;
 			if($cfg['type'] != 'init')
 			continue;
-			if(!$this->_load_pack($id, $packlist))
+			if(!$this->_loadPack($id, $packlist))
 			return false;
 		}
 		return true;
@@ -127,8 +132,8 @@ class pm{
 	 * @param $packlist array Paketliste
 	 * @return bool
 	 */
-	private function _load_pack($packname, $packlist){
-		if($this->_is_loaded($packname))
+	private function _loadPack($packname, $packlist){
+		if($this->_isLoaded($packname))
 		return true;
 		if(!is_array($packlist))
 		return false;
@@ -139,19 +144,19 @@ class pm{
 		//Abhaengigkeiten laden...
 		if(isset($packlist[$packname]['depend_runtime']) && is_array($packlist[$packname]['depend_runtime'])){
 			foreach($packlist[$packname]['depend_runtime'] as $depend){
-				if(!$this->_load_pack($depend, $packlist))
+				if(!$this->_loadPack($depend, $packlist))
 				return false;
 			}
 		}
 		if(isset($packlist[$packname]['depend_recommend']) && is_array($packlist[$packname]['depend_recommend'])){
 			foreach($packlist[$packname]['depend_recommend'] as $depend){
-				$this->_load_pack($depend, $packlist);
+				$this->_loadPack($depend, $packlist);
 			}
 		}
 		if(!is_dir(ROOTPATH.'pack/' . $packname) || !file_exists('pack/' . $packname . '/_init.php'))
 		return false;
 		$modpath = 'pack/' . $packname . '/';
-		$config = $this->_parse_config($packname);
+		$config = $this->_parseConfig($packname);
 		$pm = $this;
 		require(ROOTPATH.'pack/' . $packname . '/_init.php');
 		$this->_loaded[] = $packname;
@@ -162,7 +167,7 @@ class pm{
 	 * @param $packname string
 	 * @return bool
 	 */
-	private function _is_loaded($packname){
+	private function _isLoaded($packname){
 		if(in_array($packname, $this->_loaded))
 		return true;
 		return false;
@@ -173,7 +178,7 @@ class pm{
 	 * @param $list2 zweite Liste
 	 * @return bool/array
 	 */
-	private function _sync_list($list1, $list2){
+	private function _syncList($list1, $list2){
 		if(!is_array($list1) || !is_array($list2))
 		return false;
 		$listed = array();
@@ -183,7 +188,7 @@ class pm{
 		foreach($list2 as $id => $cfg){
 			if(!in_array($id, $listed, true))
 			continue;
-			if(($compare = $this->_compare_version($cfg['version'], $list1[$id]['version'])) == 2)
+			if(($compare = $this->_compareVersion($cfg['version'], $list1[$id]['version'])) == 2)
 			$list1[$id] = $cfg;
 		}
 		return $list1;
@@ -194,7 +199,7 @@ class pm{
 	 * @param $version2 versionsnummer mit "."
 	 * @return int
 	 */
-	private function _compare_version($version1, $version2){
+	private function _compareVersion($version1, $version2){
 		$version1 = explode('.', $version1);
 		$version2 = explode('.', $version2);
 		if($version1[0] < $version2[0])
@@ -216,7 +221,7 @@ class pm{
 	 * @param $langfile string Dateiname
 	 * @return bool/array
 	 */
-	private function _load_lang_file($langfile){
+	private function _loadLangFile($langfile){
 		if(!file_exists($langfile))
 		return false;
 		$return = parse_ini_file($langfile);
@@ -229,14 +234,14 @@ class pm{
 	 * @param $index string Paketname
 	 * @return bool
 	 */
-	public function open_index($index){
+	public function openIndex($index){
 		if(!isset($this->_installed[$index]['type']) || !$this->_installed[$index]['type'] == 'index'){
-			$this->show_error('404', 404);
+			$this->showError('404', 404);
 			return false;
 		}
-		if($this->_load_pack($index, $this->_installed))
+		if($this->_loadPack($index, $this->_installed))
 		return true;
-		$this->show_error('404', 404);
+		$this->showError('404', 404);
 		return false;
 	}
 	/**
@@ -245,15 +250,15 @@ class pm{
 	 * @param $http int HTTP Status (e.g. 200)
 	 * @return void
 	 */
-	public function show_error($errorcode, $http = 200){
+	public function showError($errorcode, $http = 200){
 		header('HTTP/ '.$http);
-		$errorcode = $this->parse_lang_const($errorcode);
+		$errorcode = $this->parseLangConst($errorcode);
 		include(ROOTPATH.'pm/include/tpl/error.tpl.php');
 		exit();
 	}
-	public function show_pack_error($errorcode, $package, $http = 200, $referBack = false, $referUrl = false){
+	public function showPackError($errorcode, $package, $http = 200, $referBack = false, $referUrl = false){
 		header('HTTP/ '.$http);
-		$errorcode = $this->parse_pack_lang_const($errorcode, $package);
+		$errorcode = $this->parsePackLangConst($errorcode, $package);
 		include(ROOTPATH.'pm/include/tpl/error.tpl.php');
 		exit();
 	}
@@ -262,16 +267,16 @@ class pm{
 	 * @param $errorcode Sprachkonstante
 	 * @return string
 	 */
-	public function parse_lang_const($errorcode){
+	public function parseLangConst($errorcode){
 		if(!isset($this->_errcodes[$errorcode]))
 		$errorcode = "n/a";
 		else
 		$errorcode = $this->_errcodes[$errorcode];
 		return $errorcode;
 	}
-	public function parse_pack_lang_const($code, $package){
+	public function parsePackLangConst($code, $package){
 		if(!isset($this->_errcodes[$package]))
-		$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
+		$this->_errcodes[$package] = $this->_loadLangFile(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
 		if(!isset($this->_errcodes[$package][$code]))
 		$errorcode = "n/a";
 		else
@@ -283,9 +288,9 @@ class pm{
 	 * @param $package
 	 * @return unknown_type
 	 */
-	public function list_pack_lang_const($package){
+	public function listPackLangConst($package){
 		if(!isset($this->_errcodes[$package]))
-		$this->_errcodes[$package] = $this->_load_lang_file(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
+		$this->_errcodes[$package] = $this->_loadLangFile(ROOTPATH . 'pack/' . $package . '/_lang/de/lang.ini.php');
 		if(!isset($this->_errcodes[$package]))
 		return false;
 		return $this->_errcodes[$package];
@@ -298,73 +303,73 @@ class pm{
 	 * @param $force bool Fehler teilweise ignorieren
 	 * @return bool
 	 */
-	public function install_pack($packname, $packfile = '', $remote = false, $force = false){
+	public function installPack($packname, $packfile = '', $remote = false, $force = false){
 		//Paket entpacken und pruefen
 		if($packfile){
-			$this->backup($this->_backup_type, $this->parse_lang_const('BACKUP_INSTALL') . $packname);
+			$this->backup($this->_backupType, $this->parseLangConst('BACKUP_INSTALL') . $packname);
 			require_once(ROOTPATH.'pm/include/pclzip.lib.php');
 			if(!file_exists($packfile)){
-				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('PACK_NOT_EXISTS') . $packname . '</p>';
+				$this->_debugcodes .= "\n<p>" . $this->parseLangConst('PACK_NOT_EXISTS') . $packname . '</p>';
 				return false;
 			}
 			$zip = new PclZip($packfile);
 			if ($zip->extract(PCLZIP_OPT_PATH, ROOTPATH.'pm/tmp') == 0) {
-				$this->_debugcodes("\n<p>" . $this->parse_lang_const('EXTRACT_ERROR') .$zip->errorInfo(true) . '</p>');
+				$this->_debugcodes("\n<p>" . $this->parseLangConst('EXTRACT_ERROR') .$zip->errorInfo(true) . '</p>');
 			}
 		}
 		if(!is_dir(ROOTPATH.'pm/tmp/' . $packname)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('UNPACK_NOT_FOUND') . '</p>';
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('UNPACK_NOT_FOUND') . '</p>';
 			return false;
 		}
 		$packdir = ROOTPATH.'pm/tmp/' . $packname . '/';
 		$srcdir = $packdir . 'src/';
 		if(!file_exists($packdir . 'pack.ini.php') || !($install_ini = parse_ini_file($packdir . 'pack.ini.php', true))){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('CORRUPT_SETUP_FILE') . '</p>';
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('CORRUPT_SETUP_FILE') . '</p>';
 			return false;
 		}
 		if(!is_dir($srcdir) || !file_exists($srcdir . '_init.php')){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('CORRUPT_PACK') . '</p>';
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('CORRUPT_PACK') . '</p>';
 			return false;
 		}
 		if(!isset($install_ini[$packname])){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('CORRUPT_PACK') . '</p>';
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('CORRUPT_PACK') . '</p>';
 			return false;
 		}
 		//Paket sollte OK sein.
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INSTALL') . $packname . '</p>';
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('INSTALL') . $packname . '</p>';
 		$directini = $install_ini[$packname];
 		//Abhaengigkeiten laden...
 		if(isset($directini['depend_install'])){
 			foreach($directini['depend_install'] as $depend){
-				if($this->_is_loaded($depend)){
+				if($this->_isLoaded($depend)){
 					continue;
-				}else if($this->_is_installed($depend)){
-					$this->_load_pack($depend, $this->_installed);
+				}else if($this->_isInstalled($depend)){
+					$this->_loadPack($depend, $this->_installed);
 					continue;
 				}
-				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INSTALL_DEP') . $depend . '</p>';
+				$this->_debugcodes .= "\n<p>" . $this->parseLangConst('INSTALL_DEP') . $depend . '</p>';
 				$this->_debugcodes .= '<blockquote>';
-				if(!$this->install_pack($depend, false, false))
+				if(!$this->installPack($depend, false, false))
 				{
 					$this->_debugcodes .= '</blockquote>';
-					$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('DEPEND_LOAD_ERROR') . '</p>';
+					$this->_debugcodes .= "\n<p>" . $this->parseLangConst('DEPEND_LOAD_ERROR') . '</p>';
 					if(!$force)
 					return false;
 				}
-				$this->_load_pack($depend, $this->_installed);
+				$this->_loadPack($depend, $this->_installed);
 				$this->_debugcodes .= '</blockquote>';
 			}
 		}
 		if(isset($directini['depend_runtime'])){
 			foreach($directini['depend_runtime'] as $depend){
-				if(!$this->_is_installed($depend))
+				if(!$this->_isInstalled($depend))
 				continue;
-				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INSTALL_DEP') . $depend . '</p>';
+				$this->_debugcodes .= "\n<p>" . $this->parseLangConst('INSTALL_DEP') . $depend . '</p>';
 				$this->_debugcodes .= '<blockquote>';
-				if(!$this->install_pack($depend, false, false))
+				if(!$this->installPack($depend, false, false))
 				{
 					$this->_debugcodes .= '</blockquote>';
-					$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('DEPEND_LOAD_ERROR') . '</p>';
+					$this->_debugcodes .= "\n<p>" . $this->parseLangConst('DEPEND_LOAD_ERROR') . '</p>';
 					if(!$force)
 					return false;
 				}
@@ -372,50 +377,50 @@ class pm{
 			}
 		}
 		//Ueberpruefen ob Paket installiert ist
-		if($this->_is_installed($packname) && is_dir(ROOTPATH.'pack/' . $packname)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('ALREADY_INSTALLED') . '</p>';
+		if($this->_isInstalled($packname) && is_dir(ROOTPATH.'pack/' . $packname)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('ALREADY_INSTALLED') . '</p>';
 			//Versionsnummern vergleichen
-			$compared = $this->_compare_version($directini['version'], $this->_installed[$packname]['version']);
+			$compared = $this->_compareVersion($directini['version'], $this->_installed[$packname]['version']);
 			if($compared == 2 || $compared == 0){
 				//Neuer oder gleich
 				//Vergleichen per funktion damit auch fuer UI nutzbar
 				if($install_ini['SETUP']){
-					if(!$this->check_intregrit($packname, $install_ini['SETUP'])){
-						$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INSTALLED_FILES_CHANGED') . '</p>';
+					if(!$this->checkIntregrit($packname, $install_ini['SETUP'])){
+						$this->_debugcodes .= "\n<p>" . $this->parseLangConst('INSTALLED_FILES_CHANGED') . '</p>';
 						if(!$force)
 						return false;
 					}
 				}
 			} else {
 				//Aelter
-				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('ALREADY_INSTALLED_NEWER') . '</p>';
+				$this->_debugcodes .= "\n<p>" . $this->parseLangConst('ALREADY_INSTALLED_NEWER') . '</p>';
 				if(!$force)
 				return false;
 			}
 		} else if(is_dir(ROOTPATH.'pack/' . $packname)){
-			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->parse_lang_const('ALREADY_EXISTING') . '</a></p>';
+			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->parseLangConst('ALREADY_EXISTING') . '</a></p>';
 			if(!$force)
 			return false;
-		} else if($this->_is_installed($packname)){
-			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->parse_lang_const('ALREADY_INSTALLED_NO_FILES') . '</a></p>';
+		} else if($this->_isInstalled($packname)){
+			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->parseLangConst('ALREADY_INSTALLED_NO_FILES') . '</a></p>';
 			if(!$force)
 			return false;
 		}
-		if(!$this->_copy_req($srcdir, ROOTPATH.'pack/' . $packname)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('COPY_FAILED') . '</p>';
+		if(!$this->_copyReq($srcdir, ROOTPATH.'pack/' . $packname)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('COPY_FAILED') . '</p>';
 			return false;
 		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('COPY_COMPLETED') . '</p>';
-		if(!$this->_add_pack($packname, $directini)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INI_ERROR') . '</p>';
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('COPY_COMPLETED') . '</p>';
+		if(!$this->_addPack($packname, $directini)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('INI_ERROR') . '</p>';
 			return false;
 		}
 		//In die INI eintragen
-		if(!$this->_write_ini_file($this->_installed, ROOTPATH . 'pm/config/installed.ini.php', true)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INI_ERROR') . '</p>';
+		if(!$this->_writeIniFile($this->_installed, ROOTPATH . 'pm/config/installed.ini.php', true)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('INI_ERROR') . '</p>';
 			return false;
 		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('INSTALL_COMPLETE') . '</p>';
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('INSTALL_COMPLETE') . '</p>';
 		return true;
 	}
 	/**
@@ -427,7 +432,7 @@ class pm{
 	 * @param $has_sections bool Sektionen
 	 * @return array/bool
 	 */
-	private function _tolerance_parse_ini_file($file, $has_sections = false){
+	private function _toleranceParseIniFile($file, $has_sections = false){
 		if(!file_exists($file))
 		return false;
 		$file = fopen($file, 'r');
@@ -501,7 +506,7 @@ class pm{
 	 * @param $has_sections bool Sektionen verwenden
 	 * @return bool
 	 */
-	private function _write_ini_file($assoc_arr, $path, $has_sections=FALSE) {
+	private function _writeIniFile($assoc_arr, $path, $has_sections=FALSE) {
 		$content = ";<?php die('PDBP'); ?>\n";
 
 		if ($has_sections) {
@@ -550,15 +555,15 @@ class pm{
 	 * @param $settings array Einstellungen fuer die Installation
 	 * @return unknown_type bool
 	 */
-	private function _add_pack($packname, $settings){
+	private function _addPack($packname, $settings){
 		if(!isset($settings) || !is_array($settings))
 		return false;
 		$packname = strtolower($packname);
 		if(!preg_match('![a-z_0-9]!', $packname))
 		return false;
-		else if(!$this->_is_installed($packname)){
+		else if(!$this->_isInstalled($packname)){
 			$this->_installed[$packname] = $settings;
-		}else if($this->_is_installed($packname)){
+		}else if($this->_isInstalled($packname)){
 			//Mehr beim Update?!
 			$this->_installed[$packname] = $settings;
 		} else
@@ -569,7 +574,7 @@ class pm{
 	 * Ausagbe der Debug Variable
 	 * @return string
 	 */
-	public function get_debug_code(){
+	public function getDebugCode(){
 		return $this->_debugcodes;
 	}
 	/**
@@ -579,20 +584,20 @@ class pm{
 	 * @param $take_backup bool Backup erstellen
 	 * @return bool
 	 */
-	public function remove_pack($package, $remove_deps = false, $take_backup = true){
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_PACK') . " <b>" . $package . "</b></p>";
-		if(!$this->_is_installed($package)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('NOT_INSTALLED') . "</p>";
+	public function removePack($package, $remove_deps = false, $take_backup = true){
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('REMOVE_PACK') . " <b>" . $package . "</b></p>";
+		if(!$this->_isInstalled($package)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('NOT_INSTALLED') . "</p>";
 			return false;
 		}
 		if($take_backup)
-		$this->backup($this->_backup_type, $this->parse_lang_const('BACKUP_REMOVE') . $package);
-		if($depend = $this->_depend_exists($package)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('DEPEND_EXISTS') . "</p>";
+		$this->backup($this->_backupType, $this->parseLangConst('BACKUP_REMOVE') . $package);
+		if($depend = $this->_dependExists($package)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('DEPEND_EXISTS') . "</p>";
 			foreach($depend as $pack){
 				$this->_debugcodes .= "\n<blockquote>";
 				if($remove_deps){
-					$this->remove_pack($pack, true, false);
+					$this->removePack($pack, true, false);
 				}
 				$this->_debugcodes .= "\n</blockquote>";
 			}
@@ -600,27 +605,27 @@ class pm{
 			return false;
 		}
 		if(!is_dir(ROOTPATH . 'pack/' . $package)){
-			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->parse_lang_const('ALREADY_INSTALLED_NO_FILES') . '</a></p>';
+			$this->_debugcodes .= "\n<p><a href=\"?p=clean_pm\">" . $this->parseLangConst('ALREADY_INSTALLED_NO_FILES') . '</a></p>';
 			return false;
 		}
 		if(file_exists(ROOTPATH . 'pack/' . $package . '/remove.php')){
 			include(ROOTPATH . 'pack/' . $package . '/remove.php');
 			$package_remove = $package . '_remove';
 			if(function_exists($package_remove) && $return = $package_remove() !== true){
-				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_ROUTINE_FAILED') . $return . '</p>';
+				$this->_debugcodes .= "\n<p>" . $this->parseLangConst('REMOVE_ROUTINE_FAILED') . $return . '</p>';
 				return false;
 			}
 		}
-		if(!$this->_req_remove(ROOTPATH . 'pack/' . $package)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_FILES_FAILED') . '</p>';
+		if(!$this->_reqRemove(ROOTPATH . 'pack/' . $package)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('REMOVE_FILES_FAILED') . '</p>';
 			return false;
 		}
 		unset($this->_installed[$package]);
-		if(!$this->_write_ini_file($this->_installed, ROOTPATH . 'pm/config/installed.ini.php', true)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_INI_FAILED') . '</p>';
+		if(!$this->_writeIniFile($this->_installed, ROOTPATH . 'pm/config/installed.ini.php', true)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('REMOVE_INI_FAILED') . '</p>';
 			return false;
 		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('REMOVE_COMPLETED') . '</p>';
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('REMOVE_COMPLETED') . '</p>';
 		return true;
 	}
 	/**
@@ -628,7 +633,7 @@ class pm{
 	 * @param $filename string Dateiname
 	 * @return bool
 	 */
-	private function _req_remove($filename){
+	private function _reqRemove($filename){
 		$filename = preg_replace("!\/$!", '', $filename);
 		if(!file_exists($filename))
 		return false;
@@ -641,35 +646,35 @@ class pm{
 			while($file = readdir($dir)){
 				if($file == '.' || $file == '..')
 				continue;
-				if(!$this->_req_remove($filename . '/' . $file))
+				if(!$this->_reqRemove($filename . '/' . $file))
 				return false;
 			}
 			closedir($dir);
 			return @rmdir($filename);
 		}
 	}
-	public function add_repo(){
+	public function addRepo(){
 
 	}
-	public function remove_repo(){
+	public function removeRepo(){
 
 	}
-	public function refresh_repo(){
+	public function refreshRepo(){
 
 	}
-	public function check_update(){
+	public function checkUpdate(){
 
 	}
-	public function install_repo(){
+	public function installRepo(){
 
 	}
 	public function search(){
 
 	}
-	public function active_pack(){
+	public function activePack(){
 
 	}
-	public function deactive_pack(){
+	public function deactivePack(){
 
 	}
 	/**
@@ -677,8 +682,8 @@ class pm{
 	 * @param $package string Paketname
 	 * @return array/bool
 	 */
-	private function _depend_exists($package){
-		if(!$this->_is_installed($package))
+	private function _dependExists($package){
+		if(!$this->_isInstalled($package))
 		return false;
 		$return = array();
 		foreach($this->_installed as $name => $pack){
@@ -698,7 +703,7 @@ class pm{
 	 * @param $packname string Paketname
 	 * @return bool
 	 */
-	private function _is_installed($packname){
+	private function _isInstalled($packname){
 		if(isset($this->_installed[$packname]))
 		return true;
 		return false;
@@ -710,11 +715,11 @@ class pm{
 	 * @param $silence bool debugconstanten setzen
 	 * @return bool
 	 */
-	private function _copy_req($src, $dest, $silence = false){
+	private function _copyReq($src, $dest, $silence = false){
 		//Komplettes verzeichniss rekursiv kopieren
 		if(!$silence){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('SOURCE') ." " . $src . "</p>";
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('DESTINATION') . " " . $dest . "</p>";
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('SOURCE') ." " . $src . "</p>";
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('DESTINATION') . " " . $dest . "</p>";
 		}
 		//Endenden Slash entfernen
 		$src = preg_replace('!\/$!', '', $src);
@@ -736,7 +741,7 @@ class pm{
 			while($item = readdir($dir)){
 				if($item == '.' || $item == '..')
 				continue;
-				if(!$this->_copy_req($src . '/' . $item, $dest . '/' . $item))
+				if(!$this->_copyReq($src . '/' . $item, $dest . '/' . $item))
 				return false;
 			}
 			$this->_debugcodes .= '</blockquote>';
@@ -754,15 +759,15 @@ class pm{
 	 * @param $cfg array Konfigurationsdatei
 	 * @return bool
 	 */
-	public function check_intregrit($packname, $cfg){
-		if(!$this->_is_installed($packname))
+	public function checkIntregrit($packname, $cfg){
+		if(!$this->_isInstalled($packname))
 		return true;
 		if(!is_array($cfg))
 		return false;
 		if(isset($cfg['md5']) && is_array($cfg['md5'])){
 			foreach($cfg['md5'] as $hash){
 				$hash = explode(";", $hash);
-				if($this->_compare_version($hash[0], $this->_installed[$packname]['version']) != 0)
+				if($this->_compareVersion($hash[0], $this->_installed[$packname]['version']) != 0)
 				continue;
 				if(!file_exists(ROOTPATH . 'pack/' . $packname . '/' . $hash[1]))
 				continue;
@@ -780,9 +785,9 @@ class pm{
 	 */
 	public function backup($full, $comment = 'Backup'){
 		if(!$full){
-			return $this->_backup_dep($comment);
+			return $this->_backupDep($comment);
 		} else {
-			return $this->_backup_full();
+			return $this->_backupFull();
 		}
 	}
 	/**
@@ -790,24 +795,24 @@ class pm{
 	 * @param $comment string Kommentar
 	 * @return bool
 	 */
-	private function _backup_dep($comment = 'Backup'){
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_MAKE_DEP') .  "</p>";
-		$file_hash = $this->_get_md5_fs();
+	private function _backupDep($comment = 'Backup'){
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_MAKE_DEP') .  "</p>";
+		$file_hash = $this->_getMd5Fs();
 		if(!$file_hash){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_NO_DEP_EXISTS') .  "</p>";
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_NO_DEP_EXISTS') .  "</p>";
 			$this->_debugcodes .= "\n<blockquote>";
 			if(file_exists(ROOTPATH . 'pm/backup/dep/bup/1.zip')){
-				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT') .  "</p>";
+				$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_DEP_CORRUPT') .  "</p>";
 				return false;
 			}
-			$list = $this->_backup_full(ROOTPATH . 'pm/backup/dep/bup/1.zip');
+			$list = $this->_backupFull(ROOTPATH . 'pm/backup/dep/bup/1.zip');
 			$this->_debugcodes .= "\n</blockquote>";
 			$id = 1;
 		} else {
-			$merged = $this->_merge_md5_fs($file_hash, ROOTPATH);
+			$merged = $this->_mergeMd5Fs($file_hash, ROOTPATH);
 			$dir = opendir(ROOTPATH . 'pm/backup/dep/bup');
 			if(!$dir){
-				$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_BUP_NOT_OPENED') .  "</p>";
+				$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_DEP_BUP_NOT_OPENED') .  "</p>";
 				return false;
 			}
 			$ids = array();
@@ -825,12 +830,12 @@ class pm{
 			$zip = new PclZip(ROOTPATH . 'pm/backup/dep/bup/' . $id . '.zip');
 			$list = $zip->create($merged);
 		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_WRITE_MD5_FS') .  "</p>";
-		if(false === $changes = $this->_write_md5_fs(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php', ROOTPATH . 'pm/backup/dep/data/' . $id . '.ini.php', $list, $this->_tolerance_parse_ini_file(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'), $comment)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_WRITE_MD5_FS_FAILED') . "</p>";
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_WRITE_MD5_FS') .  "</p>";
+		if(false === $changes = $this->_writeMd5Fs(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php', ROOTPATH . 'pm/backup/dep/data/' . $id . '.ini.php', $list, $this->_toleranceParseIniFile(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'), $comment)){
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_WRITE_MD5_FS_FAILED') . "</p>";
 			return false;
 		}
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_EDITED_FILES') . $changes .  "</p>";
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_EDITED_FILES') . $changes .  "</p>";
 	}
 	/**
 	 * Erstellt eine Dateiliste mit geaenderten Dateien
@@ -839,7 +844,7 @@ class pm{
 	 * @param $return array Temporaer (Rekursivitaet)
 	 * @return array/bool
 	 */
-	private function _merge_md5_fs($md5fs, $filename, $return = array()){
+	private function _mergeMd5Fs($md5fs, $filename, $return = array()){
 		if(!file_exists($filename))
 		return false;
 		if(!is_readable($filename))
@@ -850,14 +855,14 @@ class pm{
 			while($file = readdir($dir)){
 				if($file == '.' || $file == '..')
 				continue;
-				$return = $this->_merge_md5_fs($md5fs, $filename . '/' . $file, $return);
+				$return = $this->_mergeMd5Fs($md5fs, $filename . '/' . $file, $return);
 			}
 			closedir($dir);
 		} else {
 			$filename = preg_replace("!^\.\/!", '', $filename);
 			if(preg_match("!^pm\/backup!", $filename))
 			return $return;
-			if(!in_array(ROOTPATH . preg_replace("!^(.*?)\/.*!", "$1", $filename), $this->_full_backup_files))
+			if(!in_array(ROOTPATH . preg_replace("!^(.*?)\/.*!", "$1", $filename), $this->_fullBackupFiles))
 			return $return;
 			if(!isset($md5fs[$filename])){
 				$return[] = $filename;
@@ -879,7 +884,7 @@ class pm{
 	 * @param $comment string Kommentar
 	 * @return bool/int
 	 */
-	private function _write_md5_fs($file, $bup_file, $list, $mergewith = array(), $comment = 'Backup'){
+	private function _writeMd5Fs($file, $bup_file, $list, $mergewith = array(), $comment = 'Backup'){
 		if(!$mergewith)
 		$mergewith = array();
 		$info = array();
@@ -888,7 +893,7 @@ class pm{
 		if(!is_array($list) || !is_array($mergewith))
 		return false;
 		if(file_exists($bup_file)){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_CORRUPT_MD5_FS') .  "</p>";
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_DEP_CORRUPT_MD5_FS') .  "</p>";
 			return false;
 		}
 		$count = 0;
@@ -913,18 +918,18 @@ class pm{
 			$info['edited'][] = $file_merge['filename'];
 			$count ++;
 		}
-		$this->_write_ini_file($mergewith, $file, false);
-		$this->_write_ini_file($info, $bup_file, false);
+		$this->_writeIniFile($mergewith, $file, false);
+		$this->_writeIniFile($info, $bup_file, false);
 		return $count;
 	}
 	/**
 	 * Parst die aktuelle Liste aller Dateien
 	 * @return array/bool
 	 */
-	private function _get_md5_fs(){
+	private function _getMd5Fs(){
 		if(!file_exists(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php'))
 		return false;
-		$ini = $this->_tolerance_parse_ini_file(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php');
+		$ini = $this->_toleranceParseIniFile(ROOTPATH . 'pm/backup/dep/data/md5fs.ini.php');
 		if(!$ini)
 		return false;
 		return $ini;
@@ -936,33 +941,33 @@ class pm{
 	 * @param $bup_file string Dateiname zum speichern
 	 * @return bool/array
 	 */
-	private function _backup_full($bup_file = ''){ //TODO Datenbankbackup
+	private function _backupFull($bup_file = ''){ //TODO Datenbankbackup
 	$date = date('Y_m_d_H_i_s', time());
 	if(!$bup_file)
 	$bup_file = ROOTPATH . 'pm/backup/full/' . $date . '.zip';
 	require_once(ROOTPATH.'pm/include/pclzip.lib.php');
-	$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL') . $bup_file .  "</p>";
+	$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_FULL') . $bup_file .  "</p>";
 	if(file_exists($bup_file)){
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_FULL_EXISTS') . $bup_file .  "</p>";
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_FULL_EXISTS') . $bup_file .  "</p>";
 		return false;
 	}
 	$zip = new PclZip($bup_file);
-	if(!$list = $zip->create($this->_full_backup_files)){
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_ERROR_PCLZIP') . $zip->errorInfo(true) .  "</p>";
+	if(!$list = $zip->create($this->_fullBackupFiles)){
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_ERROR_PCLZIP') . $zip->errorInfo(true) .  "</p>";
 		return false;
 	}
-	$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DONE') . "</p>";
+	$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_DONE') . "</p>";
 	if($bup_file != ROOTPATH . 'pm/backup/full/' . $date . '.zip')
-	$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+	$this->_debugcodes .= "\n<p><a href=\"" . $bup_file . "\">" . $this->parseLangConst('BUP_DOWNLOAD') . "</a></p>";
 	else{
-		if($this->_is_installed('backup_loader'))
-		$this->_debugcodes .= "\n<p><a href=\"index.php?p=backup_loader&filename=" . $date . "\">" . $this->parse_lang_const('BUP_DOWNLOAD') . "</a></p>";
+		if($this->_isInstalled('backup_loader'))
+		$this->_debugcodes .= "\n<p><a href=\"index.php?p=backup_loader&filename=" . $date . "\">" . $this->parseLangConst('BUP_DOWNLOAD') . "</a></p>";
 		else
-		$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DOWNLOAD_NO_EXT') . "</p>";
+		$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_DOWNLOAD_NO_EXT') . "</p>";
 	}
 	return $list;
 	}
-	private function _gen_md5_fs($filename = ROOTPATH, $return = array()){
+	private function _genMd5Fs($filename = ROOTPATH, $return = array()){
 		if(!file_exists($filename))
 		return false;
 		if(!is_readable($filename))
@@ -977,7 +982,7 @@ class pm{
 			while($file = readdir($dir)){
 				if($file == '.' || $file == '..')
 				continue;
-				$return = $this->_gen_md5_fs($filename . '/' . $file, $return);
+				$return = $this->_genMd5Fs($filename . '/' . $file, $return);
 			}
 			closedir($dir);
 		} else {
@@ -994,23 +999,23 @@ class pm{
 	 * @param $id int Zuruecksetzen bis
 	 * @return bool
 	 */
-	public function revert_changes($id){
+	public function revertChanges($id){
 		require_once(ROOTPATH.'pm/include/pclzip.lib.php');
 		if(!file_exists(ROOTPATH . 'pm/backup/dep/bup/' . $id . '.zip') || !file_exists(ROOTPATH . 'pm/backup/dep/data/' . $id . '.ini.php')){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_REVERT_INCOMPLETE_ERROR') . "</p>";
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_REVERT_INCOMPLETE_ERROR') . "</p>";
 			return false;
 		}
 		//Erst veraenderungen herausfinden
-		$last_bup = $this->_get_md5_fs();
+		$last_bup = $this->_getMd5Fs();
 		if(!$last_bup){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_REVERT_INCOMPLETE_ERROR') . "</p>";
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_REVERT_INCOMPLETE_ERROR') . "</p>";
 			return false;
 		}
-		$act_md5 = $this->_gen_md5_fs(ROOTPATH);
+		$act_md5 = $this->_genMd5Fs(ROOTPATH);
 		$diff = array_diff($last_bup, $act_md5);
 		$dir = opendir(ROOTPATH . 'pm/backup/dep/bup');
 		if(!$dir){
-			$this->_debugcodes .= "\n<p>" . $this->parse_lang_const('BUP_DEP_BUP_NOT_OPENED') .  "</p>";
+			$this->_debugcodes .= "\n<p>" . $this->parseLangConst('BUP_DEP_BUP_NOT_OPENED') .  "</p>";
 			return false;
 		}
 		$ids = array();
@@ -1067,20 +1072,20 @@ class pm{
 	/*
 	 * Konfigurationsroutinen
 	 */
-	private function _parse_config($package){
+	private function _parseConfig($package){
 		$return = array();
 		if(!is_dir(ROOTPATH . 'pack/' . $package . '/_cfg')){
 			return false;
 		}
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
-		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
+		$cfinf = $this->_toleranceParseIniFile(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$cfdata = parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php');
 		foreach($cfdata as $name => $var){
 			if(!isset($cfinf[$name])){
 				continue;
 			}
-			$var = $this->_check_intreg_config($var, $cfinf[$name]);
+			$var = $this->_checkIntregConfig($var, $cfinf[$name]);
 			$return[$name] = $var;
 		}
 		foreach($cfinf as $name => $var){
@@ -1090,7 +1095,7 @@ class pm{
 		}
 		return $return;
 	}
-	private function _check_intreg_config($var, $data){
+	private function _checkIntregConfig($var, $data){
 		if(!isset($data['dtype']))
 		return false;
 		if(!file_exists(ROOTPATH . 'pm/plugins/cfg/' . $data['dtype'] . '.php'))
@@ -1101,15 +1106,15 @@ class pm{
 		$funcname = $data['dtype'] . '_check_intreg';
 		return $funcname($var, $data);
 	}
-	public function generate_cfg_form($package){
-		if(!$this->_is_installed($package))
+	public function generateCfgForm($package){
+		if(!$this->_isInstalled($package))
 		return false;
 		$packname = $this->_installed[$package]['real_name'];
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
 		$form = '<form method="post" action="?action=save&amp;package=' .$package . '">' . "\n" . '<table class="cfgform">';
-		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
-		$cfdata = $this->_parse_config($package);
+		$cfinf = $this->_toleranceParseIniFile(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
+		$cfdata = $this->_parseConfig($package);
 		$class = 1;
 		$js = '';
 		foreach($cfinf as $name => $data){
@@ -1133,24 +1138,50 @@ class pm{
 		$form .= "\n" . ' </table>';
 		$form .= "\n" . ' <input type="hidden" name="pdbpforms" value="true" />';
 		$form .= "\n" . '</form>';
+		return array($js, $form);
+	}
+	public function cfgFormOut($cfgForm = false, $pack = false){
+		if(!$cfgForm)
+		$cfgForm = $this->generateCfgForm($pack);
+		if(!$cfgForm)
+		return false;
+		$js = $cfgForm[0];
+		$form = $cfgForm[1];
 		include(ROOTPATH . 'pm/include/tpl/form.tpl.php');
 	}
-	public function save_form($package){
+	public function saveForm($package){
 		if(!isset($_POST['pdbpforms']))
 		return false;
-		return $this->save_data_ini($package, $_POST);
+		return $this->saveDataIni($package, $_POST);
 	}
-	public function save_data_ini($package, $data_arr){
-		$cfinf = $this->_tolerance_parse_ini_file(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
+	public function saveDataIni($package, $data_arr){
+		$cfinf = $this->_toleranceParseIniFile(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$save = array();
 		foreach($cfinf as $data => $info){
 			if(isset($data_arr[$data])){
-				$save[$data] = $this->_check_intreg_config($data_arr[$data], $info);
+				$save[$data] = $this->_checkIntregConfig($data_arr[$data], $info);
 			}
 		}
 		if(in_array(false, $save))
 		return false;
-		return $this->_write_ini_file($save, ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php');
+		return $this->_writeIniFile($save, ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php');
+	}
+	public function setTpl($tplSource){
+		$this->_tplSource = $tplSource;
+		return true;
+	}
+	public function getTpl(){
+		return $this->_tplSource;
+	}
+	public function listPackagesInstalled(){
+		return $this->_installed;
+	}
+	public function cfgExists($package){
+		if(!$this->_isInstalled($package))
+		return false;
+		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
+		return false;
+		return true;
 	}
 }
 ?>

@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
  * This file is part of Paradise-Bird-Project.
 
@@ -15,4 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
  */
-?>
+global $pm;
+$packs = $pm->listPackagesInstalled();
+if(isset($_GET['pdbp_settings_action']))
+	$action = $_GET['pdbp_settings_action'];
+else
+	$action = 'main';
+switch($action){
+	case 'main':
+		foreach ($packs as $value => $pack){
+			if(!$pm->cfgExists($value))
+			continue;
+			echo '<p>' . $pack['real_name'] . '</p>';
+		}
+		break;
+	default:
+		$pm->showError('UNKNOWN_ACTION');
+		break;
+}

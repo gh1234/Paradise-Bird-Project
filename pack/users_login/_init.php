@@ -17,7 +17,7 @@
  */
 global $pm, $user;
 if($user->isLoggedIn()){
-	$pm->show_pack_error('already_logged_in', 'users_login', 200, true, 'index.php');
+	$pm->showPackError('already_logged_in', 'users_login', 200, true, 'index.php');
 	exit;
 }
 
@@ -30,6 +30,6 @@ switch($action){
 		showTemplate('login', 'users_login');
 		break;
 	default:
-		$pm->show_error('UNKNOWN_ACTION');
+		$pm->showError('UNKNOWN_ACTION');
 		exit;
 }

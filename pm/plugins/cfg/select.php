@@ -25,11 +25,11 @@ function select_check_intreg($var, $data){
 	return $var;
 }
 function select_gen_form($name, $var, $data, $pm, $package, $class = 1){
-	$info = ' <i>('. $pm->parse_lang_const('SELECT') . ')</i>';
+	$info = ' <i>('. $pm->parseLangConst('SELECT') . ')</i>';
 	$return = "\n" . '  <tr class="c' . $class . '">';
 	$return .= "\n" . '   <td>';
 	$return .= "\n" . '    <p class="tab">';
-	$return .= "\n" . '     <label>' . $pm->parse_pack_lang_const('LAB_' . $name, $package) . $info . ': </label>';
+	$return .= "\n" . '     <label>' . $pm->parsePackLangConst('LAB_' . $name, $package) . $info . ': </label>';
 	$return .= "\n" . '    </p>';
 	$return .= "\n" . '   </td>';
 	$return .= "\n" . '   <td>';
@@ -40,7 +40,7 @@ function select_gen_form($name, $var, $data, $pm, $package, $class = 1){
 			$value = explode('|', $value);
 			if($value[0] == $var)
 			$extra = ' selected="selected"';
-			$outputval = $pm->parse_pack_lang_const('SEL_' . $value[1], $package) != 'n/a'?$pm->parse_pack_lang_const('SEL_' . $value[1], $package):$value[1];
+			$outputval = $pm->parsePackLangConst('SEL_' . $value[1], $package) != 'n/a'?$pm->parsePackLangConst('SEL_' . $value[1], $package):$value[1];
 			$return .= "\n" . '     <option value="'.$value[0].'"'.$extra.'>' . $outputval . '</option>';
 		}
 	}

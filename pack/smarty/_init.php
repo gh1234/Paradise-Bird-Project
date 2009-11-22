@@ -29,7 +29,7 @@ function showTemplate($template_name, $pack){
 	$smarty->template_dir = getDynamicTeplatePath($pack);
 	if(!$smarty->template_dir || !file_exists($smarty->template_dir . '/' . $template_name . '.tpl'))
 	die("Template was not found.");
-	$const = $pm->list_pack_lang_const($pack);
+	$const = $pm->listPackLangConst($pack);
 	if($const){
 		foreach($const as $id => $item){
 			$const['L_'.$id] = $item;
@@ -38,7 +38,7 @@ function showTemplate($template_name, $pack){
 		$smarty->assign($const);
 	}
 	$smarty->assign('TPL_DIR', $smarty->template_dir);
-	$smarty->display($template_name . '.tpl');
+	$pm->setTpl($smarty->fetch($template_name . '.tpl'));
 }
 require_once("libs/Smarty.class.php");
 global $smarty;

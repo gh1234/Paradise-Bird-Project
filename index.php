@@ -20,13 +20,14 @@ require_once("pm/include/pm.class.php");
 global $pm;
 $pm = new pm();
 if(isset($_GET['p'])){
-	if(!$pm->open_index($_GET['p']))
-		$pm->show_error('404', 404);
+	if(!$pm->openIndex($_GET['p']))
+		$pm->showError('404', 404);
 } else {
-	if(!$pm->open_index('index'))
-		$pm->show_error('404', 404);
+	if(!$pm->openIndex('index'))
+		$pm->showError('404', 404);
 }
+echo $pm->getTpl();
 //if(isset($_GET['action']) && $_GET['action'] == 'save' && isset($_GET['package'])){
-//	$return = $pm->save_form($_GET['package']);
+//	$return = $pm->saveForm($_GET['package']);
 //}
-//echo $pm->generate_cfg_form('index');
+//echo $pm->generateCfgForm('index');

@@ -29,7 +29,7 @@ function password_gen_form($name, $var, $data, $pm, $package, $class = 1){
 	$return  = "\n" . '  <tr class="c' . $class . '">';
 	$return .= "\n" . '   <td>';
 	$return .= "\n" . '    <p class="tab">';
-	$return .= "\n" . '     <label>' . $pm->parse_pack_lang_const('LAB_' . $name, $package) . ': </label>';
+	$return .= "\n" . '     <label>' . $pm->parsePackLangConst('LAB_' . $name, $package) . ': </label>';
 	$return .= "\n" . '    </p>';
 	$return .= "\n" . '   </td>';
 	$return .= "\n" . '   <td>';

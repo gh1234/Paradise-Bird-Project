@@ -39,7 +39,7 @@ function label_gen_form($name, $var, $data, $pm, $package, $class = 1){
 		$return .= "\n" . '   <td>';
 		$return .= "\n" . '    <p class="tab">';
 		$return .= "\n" . '     <input type="hidden" name="' . $name . '" value="true" />';
-		$return .= "\n" . '     ' . $pm->parse_pack_lang_const('LAB_' . $name, $package) . '';
+		$return .= "\n" . '     ' . $pm->parsePackLangConst('LAB_' . $name, $package) . '';
 		$return .= "\n" . '    </p>';
 		$return .= "\n" . '   </td>';
 		$return .= "\n" . '  </tr>';
