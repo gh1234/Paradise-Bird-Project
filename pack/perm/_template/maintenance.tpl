@@ -105,6 +105,7 @@ h1 {
  <div id="warning"></div>
  {$L_MAINTENANCE}
  <p>{$MESSAGE}</p>
+ <p><a href="?perm_action=login">{$L_admin_login}</a></p>
 </div>
 </body>
 </html>

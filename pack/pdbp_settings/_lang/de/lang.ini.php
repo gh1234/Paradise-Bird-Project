@@ -1,0 +1,10 @@
+;<?php echo 'PDBP'; ?>
+title = "Einstellungsmanager"
+modules = "Module"
+no_pack_selected = "Kein Paket ausgewählt"
+index = "Bitte wählen sie ein Modul aus, dass sie einstellen wollen."
+pack_not_exists = "Paket exestiert nicht"
+action = "Aktionen"
+logout = "Logout"
+saved = "Erfolgreich gespeichert"
+save_failed = "Speichern fehlgeschlagen"

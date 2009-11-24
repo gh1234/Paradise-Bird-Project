@@ -82,7 +82,7 @@ function array_gen_js($pm){
     oldvalues[c] = element.value;
    }
    arraycontainer.innerHTML = arraycontainer.innerHTML.replace("<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a>", "");
-   arraycontainer.innerHTML = "<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a><br /><input name=\"" +name+ "["+i+"]\" id=\"" +name+ i +"\" type=\"text\" value=\"nope\" /><a href=\"javascript:addArrayElement(\'" + name + "\', " + i + ")\">+</a><a href=\"javascript:removeArrayElement(\'" + name + "\', " + i + ")\">-</a>" + arraycontainer.innerHTML;
+   arraycontainer.innerHTML = "<a href=\"javascript:addArrayElement(\'"+name+"\', \'start\')\">+</a><br /><input name=\"" +name+ "["+i+"]\" id=\"" +name+ i +"\" type=\"text\" value=\"\" /><a href=\"javascript:addArrayElement(\'" + name + "\', " + i + ")\">+</a><a href=\"javascript:removeArrayElement(\'" + name + "\', " + i + ")\">-</a>" + arraycontainer.innerHTML;
    for(var c = 0; c < oldvalues.length; c++){
     document.getElementById(name+c).value = oldvalues[c];
    }

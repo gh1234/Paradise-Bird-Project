@@ -1112,7 +1112,7 @@ class pm{
 		$packname = $this->_installed[$package]['real_name'];
 		if(!file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php') || !file_exists(ROOTPATH . 'pack/' . $package . '/_cfg/cfdata.ini.php'))
 		return false;
-		$form = '<form method="post" action="?action=save&amp;package=' .$package . '">' . "\n" . '<table class="cfgform">';
+		$form = '<table class="cfgform">';
 		$cfinf = $this->_toleranceParseIniFile(ROOTPATH . 'pack/' . $package . '/_cfg/cfinf.ini.php');
 		$cfdata = $this->_parseConfig($package);
 		$class = 1;
@@ -1137,7 +1137,6 @@ class pm{
 		}
 		$form .= "\n" . ' </table>';
 		$form .= "\n" . ' <input type="hidden" name="pdbpforms" value="true" />';
-		$form .= "\n" . '</form>';
 		return array($js, $form);
 	}
 	public function cfgFormOut($cfgForm = false, $pack = false){

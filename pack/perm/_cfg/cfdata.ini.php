@@ -1,4 +1,5 @@
 ;<?php die('PDBP'); ?>
-usual = "denie"
-maintenance_message = "Test"
+usual = "allow"
+maintenance = "1"
+maintenance_message = "Just a test"
 submit = "1"

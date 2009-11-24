@@ -35,6 +35,15 @@ switch($action){
 			exit;
 		}
 		break;
+	case 'logout':
+		if($user->logout()){
+			$pm->showPackError('logout_done', 'users', 200, true, 'index.php');
+			exit;
+		} else {
+			$pm->showPackError('logout_failed', 'users');
+			exit;
+		}
+		break;
 	default:
 		break;
 }

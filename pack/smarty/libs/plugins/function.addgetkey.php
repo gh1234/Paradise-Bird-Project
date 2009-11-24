@@ -17,14 +17,14 @@
  */
 function smarty_function_addgetkey($params, &$smarty){
 	$currentURL = preg_replace("!^.*/(.*?)!", "$1", $_SERVER['REQUEST_URI']);
-	if(!isset($params['key']) || !isset($params['value']))
+	if(!isset($params['value']) || !isset($params['key']))
 		return $currentURL;
 	if(isset($params['url']))
 		$currentURL = $params['url'];
 	if(preg_match("!\?.*$!", $currentURL)){
-		$currentURL .= '&' . $params['key'] . '=' . $params['value'];
+		$currentURL .= '&' . $params['key'] .'='. $params['value'];
 	} else {
-		$currentURL .= '?' . $params['key'] . '=' . $params['value'];
+		$currentURL .= '?' . $params['key'] .'='. $params['value'];
 	}
 	return htmlspecialchars($currentURL);
 }

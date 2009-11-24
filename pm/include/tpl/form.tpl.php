@@ -18,7 +18,7 @@ along with Paradise-Bird-Project.  If not, see <http://www.gnu.org/licenses/>.
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title><?php echo $this->parseLangConst('CFG_EDIT') . $packname; ?></title>
+<title><?php echo $this->parseLangConst('CFG_EDIT') . $pack; ?></title>
 <style type="text/css">
 <!--
 table.cfgform {
@@ -51,6 +51,8 @@ echo $js;
 ?>
 </head>
 <body>
+<form method="post" action="?action=save&amp;package=<?php echo $pack; ?>">
 <?php echo $form; ?>
+</form>
 </body>
 </html>

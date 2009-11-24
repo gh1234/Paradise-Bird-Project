@@ -18,4 +18,20 @@
 $permcfg = $config;
 include("perm.php");
 global $perm;
-$perm = new perm(1, $config);
+if(isset($_GET['perm_action']))
+	$action = $_GET['perm_action'];
+else
+	$action = 'main';
+switch($action){
+	case 'main':
+		break;
+	case 'login':
+		$pm->openIndex('users_login');
+		echo $pm->getTpl();
+		exit;
+		break;
+	default:
+		$pm->showError('UNKNOWN_ACTION');
+		break;
+}
+$perm = new perm($config);

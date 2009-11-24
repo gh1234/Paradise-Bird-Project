@@ -30,4 +30,4 @@ echo $pm->getTpl();
 //if(isset($_GET['action']) && $_GET['action'] == 'save' && isset($_GET['package'])){
 //	$return = $pm->saveForm($_GET['package']);
 //}
-//echo $pm->generateCfgForm('index');
+//$pm->cfgFormOut(false, 'index');

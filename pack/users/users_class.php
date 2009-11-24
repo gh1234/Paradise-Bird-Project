@@ -83,6 +83,7 @@ class users{
 	public function logout(){
 		if(isset($_SESSION['user']))
 		unset($_SESSION['user']);
+		$this->_userInformation = array();
 		$this->loginGuest();
 		return true;
 	}
@@ -155,6 +156,12 @@ class users{
 		if(isset($this->_userInformation['username']) && $this->_userInformation['username'] != 'guest'){
 			return true;
 		}
+		return false;
+	}
+	public function getCurrentId(){
+		if(isset($this->_userInformation['id']))
+		return $this->_userInformation['id'];
+		else
 		return false;
 	}
 }
